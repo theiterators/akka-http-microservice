@@ -18,15 +18,11 @@ import spray.json.DefaultJsonProtocol
 
 case class IpInfo(ip: String, country: Option[String], city: Option[String], latitude: Option[Double], longitude: Option[Double])
 
-object IpInfo extends DefaultJsonProtocol {
-  implicit val ipInfoFormat = jsonFormat5(IpInfo.apply)
-}
+case class IpPairSummaryRequest(ip1: String, ip2: String)
 
 case class IpPairSummary(distance: Option[Double], ip1Info: IpInfo, ip2Info: IpInfo)
 
 object IpPairSummary extends DefaultJsonProtocol {
-  implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
-
   def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = {
     IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
   }
@@ -34,41 +30,38 @@ object IpPairSummary extends DefaultJsonProtocol {
   private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
     (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
       case (Some(lat1), Some(lon1), Some(lat2), Some(lon2)) =>
+        // see http://www.movable-type.co.uk/scripts/latlong.html
         val φ1 = toRadians(lat1)
         val φ2 = toRadians(lat2)
         val Δφ = toRadians(lat2 - lat1)
         val Δλ = toRadians(lon2 - lon1)
-        val a = sin(Δφ / 2) * sin(Δφ / 2) + cos(φ1) * cos(φ2) * sin(Δλ / 2) * sin(Δλ / 2)
+        val a = pow(sin(Δφ / 2), 2) + cos(φ1) * cos(φ2) * pow(sin(Δλ / 2), 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        Option(6371.0 * c)
+        Option(EarthRadius * c)
       case _ => None
     }
   }
+
+  private val EarthRadius = 6371.0
 }
 
-case class IpPairSummaryRequest(ip1: String, ip2: String)
-
-object IpPairSummaryRequest extends DefaultJsonProtocol {
+trait Protocols extends DefaultJsonProtocol {
+  implicit val ipInfoFormat = jsonFormat5(IpInfo.apply)
   implicit val ipPairSummaryRequestFormat = jsonFormat2(IpPairSummaryRequest.apply)
+  implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
 }
 
-object AkkaHttpMicroservice extends App {
-  val config = ConfigFactory.load()
-  val interface = config.getString("http.interface")
-  val port = config.getInt("http.port")
-  val telizeHost = config.getString("services.telizeHost")
-  val telizePort = config.getInt("services.telizePort")
-
+object AkkaHttpMicroservice extends App with Protocols {
   implicit val actorSystem = ActorSystem()
   implicit val materializer = FlowMaterializer()
   implicit val dispatcher = actorSystem.dispatcher
+
+  val config = ConfigFactory.load()
   val logger = Logging(actorSystem, getClass)
 
-  val telizeConnection = Http().outgoingConnection(telizeHost, telizePort)
+  val telizeConnection = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort"))
 
-  def telizeRequest(request: HttpRequest): Future[HttpResponse] = {
-    Source.single(request).via(telizeConnection.flow).runWith(Sink.head)
-  }
+  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnection.flow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
     telizeRequest(RequestBuilding.Get(s"/geoip/$ip")).flatMap { response =>
@@ -84,7 +77,7 @@ object AkkaHttpMicroservice extends App {
     }
   }
 
-  Http().bind(interface = interface, port = port).startHandlingWith {
+  Http().bind(interface = config.getString("http.interface"), port = config.getInt("http.port")).startHandlingWith {
     logRequestResult("akka-http-microservice") {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
