@@ -22,10 +22,9 @@ case class IpPairSummaryRequest(ip1: String, ip2: String)
 
 case class IpPairSummary(distance: Option[Double], ip1Info: IpInfo, ip2Info: IpInfo)
 
-object IpPairSummary extends DefaultJsonProtocol {
-  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = {
+object IpPairSummary {
+  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary =
     IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
-  }
 
   private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
     (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
@@ -83,7 +82,7 @@ object AkkaHttpMicroservice extends App with Protocols {
         (get & path(Segment)) { ip =>
           complete {
             fetchIpInfo(ip).map {
-              case Right(ipInfo) => ToResponseMarshallable(OK -> ipInfo)
+              case Right(ipInfo) => ToResponseMarshallable(ipInfo)
               case Left(errorMessage) => ToResponseMarshallable(BadRequest -> errorMessage)
             }
           }
@@ -92,14 +91,10 @@ object AkkaHttpMicroservice extends App with Protocols {
           complete {
             val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
             val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
-            ip1InfoFuture.flatMap { ip1Info =>
-              ip2InfoFuture.map { ip2Info =>
-                (ip1Info, ip2Info) match {
-                  case (Right(info1), Right(info2)) => ToResponseMarshallable(OK -> IpPairSummary(info1, info2))
-                  case (Left(errorMessage), _) => ToResponseMarshallable(BadRequest -> errorMessage)
-                  case (_, Left(errorMessage)) => ToResponseMarshallable(BadRequest -> errorMessage)
-                }
-              }
+            ip1InfoFuture.zip(ip2InfoFuture).map {
+              case (Right(info1), Right(info2)) => ToResponseMarshallable(IpPairSummary(info1, info2))
+              case (Left(errorMessage), _) => ToResponseMarshallable(BadRequest -> errorMessage)
+              case (_, Left(errorMessage)) => ToResponseMarshallable(BadRequest -> errorMessage)
             }
           }
         }
