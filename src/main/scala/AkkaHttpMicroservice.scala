@@ -1,5 +1,5 @@
 import akka.actor.ActorSystem
-import akka.event.Logging
+import akka.event.{LoggingAdapter, Logging}
 import akka.http.Http
 import akka.http.client.RequestBuilding
 import akka.http.marshallers.sprayjson.SprayJsonSupport._
@@ -10,9 +10,10 @@ import akka.http.server.Directives._
 import akka.http.unmarshalling.Unmarshal
 import akka.stream.FlowMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import java.io.IOException
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.math._
 import spray.json.DefaultJsonProtocol
 
@@ -23,8 +24,7 @@ case class IpPairSummaryRequest(ip1: String, ip2: String)
 case class IpPairSummary(distance: Option[Double], ip1Info: IpInfo, ip2Info: IpInfo)
 
 object IpPairSummary {
-  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary =
-    IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
+  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
 
   private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
     (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
@@ -50,17 +50,17 @@ trait Protocols extends DefaultJsonProtocol {
   implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
 }
 
-object AkkaHttpMicroservice extends App with Protocols {
-  implicit val actorSystem = ActorSystem()
-  implicit val materializer = FlowMaterializer()
-  implicit val dispatcher = actorSystem.dispatcher
+trait Service extends Protocols {
+  implicit val system: ActorSystem
+  implicit def executor: ExecutionContextExecutor
+  implicit val materializer: FlowMaterializer
 
-  val config = ConfigFactory.load()
-  val logger = Logging(actorSystem, getClass)
+  val config: Config
+  val logger: LoggingAdapter
 
-  val telizeConnection = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort"))
+  lazy val telizeConnectionFlow = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort")).flow
 
-  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnection.flow).runWith(Sink.head)
+  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnectionFlow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
     telizeRequest(RequestBuilding.Get(s"/geoip/$ip")).flatMap { response =>
@@ -76,7 +76,7 @@ object AkkaHttpMicroservice extends App with Protocols {
     }
   }
 
-  Http().bind(interface = config.getString("http.interface"), port = config.getInt("http.port")).startHandlingWith {
+  val routes = {
     logRequestResult("akka-http-microservice") {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
@@ -101,4 +101,15 @@ object AkkaHttpMicroservice extends App with Protocols {
       }
     }
   }
+}
+
+object AkkaHttpMicroservice extends App with Service {
+  implicit val system = ActorSystem()
+  implicit val materializer = FlowMaterializer()
+  implicit def executor = system.dispatcher
+
+  val config = ConfigFactory.load()
+  val logger = Logging(system, getClass)
+
+  Http().bind(interface = config.getString("http.interface"), port = config.getInt("http.port")).startHandlingWith(routes)
 }
