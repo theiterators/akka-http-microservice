@@ -23,8 +23,7 @@ case class IpPairSummaryRequest(ip1: String, ip2: String)
 case class IpPairSummary(distance: Option[Double], ip1Info: IpInfo, ip2Info: IpInfo)
 
 object IpPairSummary {
-  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary =
-    IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
+  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
 
   private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
     (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
@@ -51,16 +50,16 @@ trait Protocols extends DefaultJsonProtocol {
 }
 
 object AkkaHttpMicroservice extends App with Protocols {
-  implicit val actorSystem = ActorSystem()
+  implicit val system = ActorSystem()
+  implicit def executor = system.dispatcher
   implicit val materializer = FlowMaterializer()
-  implicit val dispatcher = actorSystem.dispatcher
 
   val config = ConfigFactory.load()
-  val logger = Logging(actorSystem, getClass)
+  val logger = Logging(system, getClass)
 
-  val telizeConnection = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort"))
+  val telizeConnectionFlow = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort")).flow
 
-  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnection.flow).runWith(Sink.head)
+  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnectionFlow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
     telizeRequest(RequestBuilding.Get(s"/geoip/$ip")).flatMap { response =>
