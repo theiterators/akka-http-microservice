@@ -105,8 +105,8 @@ trait Service extends Protocols {
 
 object AkkaHttpMicroservice extends App with Service {
   implicit val system = ActorSystem()
-  implicit val materializer = FlowMaterializer()
   implicit def executor = system.dispatcher
+  implicit val materializer = FlowMaterializer()
 
   val config = ConfigFactory.load()
   val logger = Logging(system, getClass)
