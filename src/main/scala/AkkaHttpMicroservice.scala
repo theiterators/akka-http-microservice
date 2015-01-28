@@ -1,5 +1,5 @@
 import akka.actor.ActorSystem
-import akka.event.Logging
+import akka.event.{LoggingAdapter, Logging}
 import akka.http.Http
 import akka.http.client.RequestBuilding
 import akka.http.marshallers.sprayjson.SprayJsonSupport._
@@ -10,9 +10,10 @@ import akka.http.server.Directives._
 import akka.http.unmarshalling.Unmarshal
 import akka.stream.FlowMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import java.io.IOException
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.math._
 import spray.json.DefaultJsonProtocol
 
@@ -49,15 +50,15 @@ trait Protocols extends DefaultJsonProtocol {
   implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
 }
 
-object AkkaHttpMicroservice extends App with Protocols {
-  implicit val system = ActorSystem()
-  implicit def executor = system.dispatcher
-  implicit val materializer = FlowMaterializer()
+trait Service extends Protocols {
+  implicit val system: ActorSystem
+  implicit def executor: ExecutionContextExecutor
+  implicit val materializer: FlowMaterializer
 
-  val config = ConfigFactory.load()
-  val logger = Logging(system, getClass)
+  def config: Config
+  val logger: LoggingAdapter
 
-  val telizeConnectionFlow = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort")).flow
+  lazy val telizeConnectionFlow = Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort")).flow
 
   def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnectionFlow).runWith(Sink.head)
 
@@ -75,7 +76,7 @@ object AkkaHttpMicroservice extends App with Protocols {
     }
   }
 
-  Http().bind(interface = config.getString("http.interface"), port = config.getInt("http.port")).startHandlingWith {
+  val routes = {
     logRequestResult("akka-http-microservice") {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
@@ -100,4 +101,15 @@ object AkkaHttpMicroservice extends App with Protocols {
       }
     }
   }
+}
+
+object AkkaHttpMicroservice extends App with Service {
+  override implicit val system = ActorSystem()
+  override implicit val executor = system.dispatcher
+  override implicit val materializer = FlowMaterializer()
+
+  override val config = ConfigFactory.load()
+  override val logger = Logging(system, getClass)
+
+  Http().bind(interface = config.getString("http.interface"), port = config.getInt("http.port")).startHandlingWith(routes)
 }
