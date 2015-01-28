@@ -1,6 +1,6 @@
 # Akka HTTP microservice example
 
-This project is intended to demonstrate how to use akka-http and Scala to write a simple REST (micro)service. Common tasks accomplished in this project includes:
+This project is intended to demonstrate how to use akka-http and Scala to write a simple REST (micro)service. Typical tasks accomplished in this project includes:
 
 * starting standalone HTTP server,
 * handling simple, file-based configuration,
