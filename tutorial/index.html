@@ -13,7 +13,7 @@
           <li>logging,</li>
           <li>routing,</li>
           <li>deconstructing requests,</li>
-          <li>unmarshaling JSON entities to Scala's case classes,</li>
+          <li>unmarshalling JSON entities to Scala's case classes,</li>
           <li>marshaling Scala's case classes to JSON responses,</li>
           <li>error handling,</li>
           <li>issuing requests to external services,</li>
@@ -26,9 +26,9 @@
       </p>
       <p>On next pages you will find a brief tutorial about how the service works. You can:
       <ul>
-        <li>learn <a href="#tutorial/1" class="shortcut">what a microservice is?</a></li>
-        <li>check <a href="#tutorial/2" class="shortcut">what our microservice does?</a></li>
-        <li>or you can go <a href="#tutorial/5" class="shortcut">straight to the code.</a></li>
+        <li>learn <a href="#tutorial/1" class="shortcut">what a microservice is</a>,</li>
+        <li>check <a href="#tutorial/2" class="shortcut">what our microservice does</a>,</li>
+        <li>or you can go <a href="#tutorial/5" class="shortcut">straight to the code</a>.</li>
       </ul></p>
     </div>
 
@@ -37,10 +37,10 @@
       <p>
         Microservice is a tiny standalone program that can be used as a component of bigger distributed system. Microservices:
         <ul>
-          <li>are short and consice</li>
-          <li>process only one bounded domain</li>
+          <li>are short and concise,</li>
+          <li>process only one bounded domain.</li>
         </ul>
-        In order to be readable and rewritable, code in microservices is usually very short and brief. It's usually responsible for processing only one type of data (here it is a IP location data). They rarely use high level of abstraction over databases, networking, and other components. It all makes them easier to understand and easier to reuse in multiple projects.
+        In order to be readable and rewritable, code in microservices is usually very short and brief. It's usually responsible for processing only one type of data (in this project it is an IP location data). They rarely use high level of abstraction over databases, networking, and other components. It all makes them easier to understand and easier to reuse in multiple projects.
       </p>
       <p>Next: <a href="#tutorial/2" class="shortcut">What does the example microservice do?</a></p>
     </div>
@@ -57,28 +57,28 @@
       <p>
         It should do all that by exposing two HTTP JSON endpoints:
         <ul>
-          <li><code>GET /ip/X.X.X.X</code> — which returns given IP's geolocation data,</li>
-          <li><code>POST /ip</code> — which returns distance between two IPs geolocations given JSON request <code>{"ip1": "X.X.X.X", "ip2": "Y.Y.Y.Y"}</code>,</li>
+          <li><code>GET /ip/X.X.X.X</code> — which returns given IP's geolocation data,</li>
+          <li><code>POST /ip</code> — which returns distance between two IPs geolocations given JSON request <code>{"ip1": "X.X.X.X", "ip2": "Y.Y.Y.Y"}</code>.</li>
         </ul>
       </p>
-      <p>Next: Lets see how to <a href="#tutorial/3" class="shortcut">run it!</a></p>
+      <p>Next: Let's see how to <a href="#tutorial/3" class="shortcut">run it!</a></p>
     </div>
 
     <div>
       <h2>Running the template</h2>
       <p>
-        Check <a href="#run" class="shortcut">Run</a> to see if the microservice has successfuly compiled and is already running.
+        Check <a href="#run" class="shortcut">Run</a> to see if the microservice has successfully compiled and is already running.
       </p>
       <p>
-        If check out where are Google DNS servers by opening <a href="http://localhost:9000/ip/8.8.8.8" class="shortcut"><code>http://localhost:9000/ip/8.8.8.8</code></a>. As you can see in the URL the browser will send GET request to our first endpoint.
+        You can check out where are Google DNS servers by opening <a href="http://localhost:9000/ip/8.8.8.8" class="shortcut"><code>http://localhost:9000/ip/8.8.8.8</code></a>. As you can see in the URL, the browser will send GET request to the first endpoint.
       </p>
-      <p>You can also check our endpoints using <code>curl</code> commandline tool:</p>
+      <p>You can also check our endpoints using <code>curl</code> command line tool:</p>
       <pre><code>$ curl http://localhost:9000/ip/8.8.8.8</code></pre>
       <p>and</p>
       <pre><code>curl -X POST -H 'Content-Type: application/json' http://localhost:9000/ip -d '{"ip1": "8.8.8.8", "ip2": "8.8.4.4"}'</code></pre>
-      <p>for our second endpoint.</p>
-      <p>If you don't have curl installed you can install it <a href="http://curl.haxx.se/docs/install.html">from source</a>; using your OS package manager or you can use Postman REST Client. </p>
-      <p>Next: Lets see <a href="#tutorial/4" class="shortcut">how our responses look like</a>.</p>
+      <p>for the second endpoint.</p>
+      <p>If you don't have curl installed you can install it <a href="http://curl.haxx.se/docs/install.html">from the source</a>, using your OS package manager or you can use Postman REST Client in your browser. </p>
+      <p>Next: Let's see <a href="#tutorial/4" class="shortcut">how our responses look like</a>.</p>
     </div>
 
     <div>
@@ -91,7 +91,7 @@
   "country": "United States",
   "longitude": -122.0838
 }</code></pre>
-      <p>for our first endpoint and</p>
+      <p>for the first endpoint and</p>
       <pre><code>{
   "distance": 2201.448386715217,
   "ip1Info": {
@@ -108,8 +108,8 @@
     "longitude": -97.0
   }
 }</code></pre>
-      <p>for our second endpoint. Notice that they are pretty printed. In the <a href="#run" class="shortcut">Run</a> tab you can also notice the request logs the app generates.</p>
-      <p>Next: Now as we know what our microservice does <a href="#tutorial/5" class="shortcut">lets open up the code.</a></p>
+      <p>for the second endpoint. Notice that they are pretty-printed. In the <a href="#run" class="shortcut">Run</a> tab you can see the request/response logs the app generates.</p>
+      <p>Next: Now as we know what our microservice does <a href="#tutorial/5" class="shortcut">let's open up the code</a>.</p>
     </div>
 
     <div>
@@ -125,7 +125,7 @@
       </p>
       <p>The build scripts let SBT download all the dependencies for our project (including <code>akka-http</code>). They are described inside <a href="#tutorial/6"  class="shortcut">build scripts part</a> of the tutorial.</p>
       <p>Configuration for our microservice is described in the <a href="#tutorial/7" class="shortcut">configuration part</a> of the tutorial.</p>
-      <p>The code using <code>akka-http</code> implementing our microservice's logic is described in the <a href="#tutorial/8" class="shortcut">"microservice's code" section.</a>.</p>
+      <p>The code implementing our microservice's logic is described in the <a href="#tutorial/8" class="shortcut">"microservice's code" section</a>.</p>
     </div>
 
     <div>
@@ -135,27 +135,27 @@
       </p>
       <h3>build.sbt</h3>
       <p>
-        Provides our project with typical meta-data like project names and versions. Declares Scala compiler flags and lists the dependencies.
+        <code>build.sbt</code> provides our project with typical meta-data like project names and versions, declares Scala compiler flags and lists the dependencies.
         <ul>
           <li><code>akka-actor</code> is the corner stone of Actor system that <code>akka-http</code> and <code>akka-stream</code> are based on. </li>
-          <li><code>akka-stream-experimental</code> is the library implementing Reactive Streams using Akka actors. A framework for building reactive applications.</li>
-          <li><code>akka-http-core-experiental</code> is core library for creating reactive HTTP streams.</li>
+          <li><code>akka-stream-experimental</code> is the library implementing Reactive Streams using Akka actors — a framework for building reactive applications.</li>
+          <li><code>akka-http-core-experimental</code> is core library for creating reactive HTTP streams.</li>
           <li><code>akka-http-experiental</code> is a library for processing HTTP requests using akka-streams and actors.</li>
           <li><code>akka-http-spray-json-experimental</code> is a library for marshalling Scala data types into JSON.</li>
-          <li><code>akka-http-testkit-experimental</code> is a library that helps testing <code>akka-http</code> http routing and responses.</li>
-          <li><code>org.scalatest</code> standard Scala testing library.</li>
+          <li><code>akka-http-testkit-experimental</code> is a library that helps testing <code>akka-http</code> routing and responses.</li>
+          <li><code>org.scalatest</code> is a standard Scala testing library.</li>
         </ul>
       </p>
-      <p>Notice that some of the dependencies are still in <code>-experimental</code> phase — this means that their API can be subject to major changes.</p>
+      <p>Notice that some of the dependencies are still in <code>experimental</code> phase — this means that their API can be subject to major changes.</p>
       <h3>plugins.sbt</h3>
       <p>
-        There are two plugins used for in our project. These are:
+        There are two plugins used in our project. These are:
         <ul>
-          <li><code>sbt-revolver</code> which is helpful for development. It recompiles and runs our microservice everytime the code in our files changes. (Notice that it is initialized inside <code>build.sbt</code>)</li>
+          <li><code>sbt-revolver</code> which is helpful for development. It recompiles and runs our microservice every time the code in files changes. Notice that it is initialized inside <code>build.sbt</code>.</li>
           <li><code>sbt-assembly</code> is a great library that lets us deploy our microservice as a single .jar file.</li>
         </ul>
       </p>
-      <p>Next: As we know what are dependencies our project uses, lets see <a href="#tutorial/7">what is the minimal configuration we need for the project</a>.</p>
+      <p>Next: As we know what are the dependencies of our project, let's see <a href="#tutorial/7">what is the minimal configuration needed for the project</a>.</p>
     </div>
 
     <div>
@@ -163,16 +163,16 @@
       <p>
         The seed configuration for our microservice is available in the <a href="#code/src/main/resources/application.conf" class="shortcut">application.conf</a>. It consists of three things:
         <ul>
-          <li><code>akka</code> — Akka configuration</li>
-          <li><code>http</code> — HTTP server configuration</li>
-          <li><code>services</code> External service endpoints configuration</li>
+          <li><code>akka</code> — Akka configuration,</li>
+          <li><code>http</code> — HTTP server configuration,</li>
+          <li><code>services</code> — external endpoints configuration.</li>
         </ul>
       </p>
       <p>The Akka part of the configuration will let us see more log messages on the console when developing the microservice.</p>
       <p>HTTP interface needs to be given a interface that it will run on and port that will listen for new HTTP requests.</p>
       <p>Our microservice uses external service <code>www.telize.com</code> to find where the IP we're trying to find is.</p>
       <p>
-      When deploying microservice as a <code>.jar</code> file. One can overwrite the configuration values when running the jar.
+      When deploying microservice as a <code>.jar</code> file, one can overwrite the configuration values when running the jar.
       <pre><code>java -jar microservice.jar -Dservices.telizePort=8080</code></pre>
       <p>Using configuration management system is also recommended as amount of variables rises quickly. It is hard to maintain configuration files across more complex microservice architecture.</p>
       </p>
@@ -189,7 +189,7 @@
           <li>protocols,</li>
           <li>networking logic,</li>
           <li>routes,</li>
-          <li>and main App declaration</li>
+          <li>main App declaration.</li>
         </ul>
         The names, order and configuration are not standardized, but the list above will make it easier for us to reason about this code.
       </p>
@@ -207,16 +207,16 @@
 
     <div>
       <h2>Scala types and protocols</h2>
-      <p>To see the usage of Scala types and protocols inside our microservice open up the <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:18" class="shortcut">AkkaHttpMicroservice.scala</a>
+      <p>To see the usage of Scala types and protocols inside our microservice open up the <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:18" class="shortcut">AkkaHttpMicroservice.scala</a>.
         We have two type of types there:
         <ul>
-          <li><code>IpPairSummaryRequest</code> — a case class that models our JSON HTTP requests' body.</li>
-          <li><code>IpInfo</code> and <code>IpInfoSummary</code> — case classes used as an intermediate form of data and converted to response JSON.</li>
+          <li><code>IpPairSummaryRequest</code> — a case class that models our JSON HTTP request's body.</li>
+          <li><code>IpInfo</code> and <code>IpInfoSummary</code> — case classes used as an intermediate form of data that can be converted to response JSON.</li>
         </ul>
       </p>
       <h3>Modeling requests</h3>
       <p>
-        <code>akka-http</code> let's unmarshall any JSON response into a type. This way we can validate incoming requests and pass only the ones that are well formed and complete. The easiest way to model requests is to create algebraic data types and instrument them with validations in a constructor (typical methods include using Scala's Predef library with it's <code>require</code> method).
+        <code>akka-http</code> can unmarshall any JSON request into a type. This way we can validate incoming requests and pass only the ones that are well formed and complete. The easiest way to model requests is to create algebraic data types and instrument them with validations in a constructor (typical methods include using Scala's Predef library with its <code>require</code> method).
         Example: <pre><code> case class IpPairSummaryRequest(...) {
   ...
   require(ip1..split('.').map(_.toInt).map({s => s >= 0 && s <= 255}).fold(true)(_ && _), "wrong IP address")
@@ -225,59 +225,58 @@
       </p>
       <h3>Forming JSON response</h3>
       <p>
-        One of the great features of <code>akka-http</code> is marshalling response. The responses will be implicitly converted into JSON whether they are <code>Option[T]</code>, <code>Future[T</code>, etc. proper errors and response codes will also be generated.
+        One of the great features of <code>akka-http</code> is response marshalling. The responses will be implicitly converted into JSON whether they are <code>Option[T]</code>, <code>Future[T]</code>, etc. Proper errors and response codes will also be generated.
       </p>
       <p>
         Using this feature requires:
         <ul>
-          <li><code>import akka.http.marshallers.sprayjson.SprayJsonSupport._</code> — and adding this library to the SBT build file.</li>
-          <li>declaring implicit JSON converters (here, it's done inside <code>trait Protocols</code>)</li>
+          <li><code>import akka.http.marshallers.sprayjson.SprayJsonSupport._</code>,</li>
+          <li>declaring implicit JSON converters (here it's done inside <code>Protocols</code> trait).</li>
         </ul>
       </p>
-      <p>Next: <a href="#tutorial/10" class="shortcut">Making external HTTP requests.</a></p>
+      <p>Next: <a href="#tutorial/10" class="shortcut">Making external HTTP requests</a>.</p>
     </div>
 
     <div>
       <h2>Making external HTTP request</h2>
-      <p>Handling communication with external HTTP services is done inside <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:53" class="shortcut"><code>trait Service</code></a>.
+      <p>Handling communication with external HTTP services is done inside <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:53" class="shortcut"><code>Service</code></a> trait.
       <h3>Making a HTTP request</h3>
       <p>
-        Making proper HTTP request using <code>akka-http</code> leverages the Reactive Streams approach. It requires:
+        Making a proper HTTP request using <code>akka-http</code> leverages the Reactive Streams approach. It requires:
         <ul>
-          <li>defining external service HTTP connection flow,</li>
-          <li>defining proper HTTP request,</li>
+          <li>defining an external service HTTP connection flow,</li>
+          <li>defining a proper HTTP request,</li>
           <li>defining this request as a source,</li>
-          <li>connecting the request source through external serice HTTP connection flow into,</li>
-          <li>in order for the flow to work, we also need <code>FlowMaterializer</code> and <code>ExecutionContextExecutor</code>.</li>
+          <li>connecting the request source through external service HTTP connection flow with so called <code>Sink</code>.</li>
         </ul>
-        After the request is done we get standard <code>HttpResponse</code> that we need to handle.
+	In order for the flow to run, we also need <code>FlowMaterializer</code> and <code>ExecutionContext</code>. After the request is done, we get standard <code>HttpResponse</code> that we need to handle.
       </p>
       <h3>Handling the response</h3>
       <p>Handling <code>HttpResponse</code> consists of:
         <ul>
-          <li>Checking if request was successful,</li>
-          <li>and nnmarshalling HTTP Entity into our case class.</li>
+          <li>checking if request was successful,</li>
+          <li>unmarshalling HTTP Entity into a case class.</li>
         </ul>
-        The umarshaling uses the protocol implicit values defined <a href="#tutorial/9" class="shortcut">earlier</a>.
-        Unmarshaling works using <code>Futures[T]</code> so we can always handle any errors, and exceptions raised by our validation logic.
+        The unmarshalling uses the protocol implicit values defined <a href="#tutorial/9" class="shortcut">earlier</a>.
+        Unmarshalling works using <code>Futures[T]</code> so we can always handle any errors and exceptions raised by our validation logic.
       </p>
-      <p>Next: <a href="#tutorial/10" class="shortcut">Declaring routes and responding to HTTP requests.</a></p>
+      <p>Next: <a href="#tutorial/10" class="shortcut">Declaring routes and responding to HTTP requests</a>.</p>
     </div>
 
     <div>
       <h2>Routing and running server</h2>
-      <p>Routing directives can be found <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:79" class="shortcut">here in the <code>trait Service</code></a>.</p>
+      <p>Routing directives can be found in the <a href="#code/src/main/scala/AkkaHttpMicroservice.scala:79" class="shortcut"><code>Service</code></a> trait.</p>
       <p>
-        <code>akka-http</code> provides lot of useful routing directives. One can use them by nesting them inside one another. The request will go deeper down the nested structure if it complies with each of the requirements the directive sets. Some directives filter the requests, while others help deconstructing it. If the request passes all directives, the final complete(...) {...} block gets evaluated as a <code>HttpResponse</code>.
+        <code>akka-http</code> provides lots of useful routing directives. One can use multiple directives by nesting them inside one another. The request will go deeper down the nested structure if only it complies with each of the directive's requirements. Some directives filter the requests while others help deconstructing it. If the request passes all directives, the final <code>complete(...) {...}</code> block gets evaluated as a <code>HttpResponse</code>.
       </p>
       <h3>Routing &amp; filtering directives</h3>
       <p>
         Directives responsible for routing are:
         <ul>
-          <li><code>pathPrefix("ip")</code> — filters the request by it's relative URI beginning.</li>
-          <li><code>path("ip"/"my")</code>  — filters the request by it's part of the URI relative to hostname or <code>pathPrefix</code> directive in which it is embedded in.</li>
-          <li><code>get</code> — filters GET requests.</li>
-          <li><code>post</code> — filters POST requests.</li>
+          <li><code>pathPrefix("ip")</code> — filters the request by it's relative URI beginning,</li>
+          <li><code>path("ip"/"my")</code>  — filters the request by it's part of the URI relative to the hostname or <code>pathPrefix</code> directive in which it is nested,</li>
+          <li><code>get</code> — filters GET requests,</li>
+          <li><code>post</code> — filters POST requests,</li>
           <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.server.Directives">many more.</a></li>
         </ul>
       </p>
@@ -285,55 +284,55 @@
       <p>
         Directives that let us deconstruct the request:
         <ul>
-          <li><code>entity(as[IpPairSummaryRequest])</code> — unmarshalls HTTP entity into an object. It is useful for handling JSON requests.</li>
-          <li><code>formFields('field1, 'field2)</code> — extracts form fields form POST request.</li>
-          <li><code>headerValueByName("X-Auth-Token")</code> — extracts a header value by it's name.</li>
-          <li><code>path("member" / Segment / "books")</code> — The <code>Segment</code> part of the directive let's us extract a string from the URI.</li>
+          <li><code>entity(as[IpPairSummaryRequest])</code> — unmarshalls HTTP entity into an object;  useful for handling JSON requests,</li>
+          <li><code>formFields('field1, 'field2)</code> — extracts form fields form POST request,</li>
+          <li><code>headerValueByName("X-Auth-Token")</code> — extracts a header value by its name,</li>
+          <li><code>path("member" / Segment / "books")</code> — the <code>Segment</code> part of the directive lets us extract a string from the URI,</li>
           <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.server.Directives">many more.</a></li>
         </ul>
-        Directives can provide us with some values we can later us to prepare response.
+        Directives can provide us with some values we can use later to prepare a response:
 
         <pre><code>headerValueByName("X-Requester-Name") { requesterName =>
-  Ok("Hi " + $requesterName)
+  Ok("Hi " + requesterName)
 }</code></pre>
-        There are other directives like <code>logRequestResult</code> that don't change the flow of the request. We can also create our own directives where needed.
+        There are other directives like <code>logRequestResult</code> that don't change the flow of the request. We can also create our own directives whenever needed.
       </p>
       <h3>Building a response</h3>
       <p>
-        If we use <a href="#tutorial/9" class="shortcut">JSON marchalling</a> it is easy to build a JSON response. All we need to do is apply <code>StatusCode</code> passing <code>Future</code>, <code>Option</code>, etc. of object we want to marshall as a response. Most of the popular HTTP status codes are already implemented in <code>akka-http</code>. Some of them are:
+        If we use <a href="#tutorial/9" class="shortcut">JSON marshalling</a>, it is very easy to build a JSON response. All we need to do is to return marshallable type in <code>complete</code> directive (ex. <code>String</code>, <code>Future[T]</code>, <code>Option[T]</code>, <code>StatusCode</code>, etc.). Most of the HTTP status codes are already implemented in <code>akka-http</code>. Some of them are:
         <ul>
           <li><code>Ok</code> — 200 response</li>
-          <li><code>NotFound</code> — 404 response, which is automaticaly generated when <code>None</code> <code>Option</code> is passed.</li>
+          <li><code>NotFound</code> — 404 response which is automatically generated when <code>None</code> is returned.</li>
           <li><code>Unauthorized</code> — 401 response</li>
           <li><code>Bad Request</code> — 400 response</li>
         </ul>
       </p>
-      <p>Next: <a href="#tutorial/12" class="shortcut">Testing <code>akka-http</code></a></p>
+      <p>Next: <a href="#tutorial/12" class="shortcut">Testing <code>akka-http</code></a>.</p>
     </div>
 
     <div>
       <h2>Tests</h2>
       <p>
-        Check out <a href="#code/src/test/scala/ServiceSpec.scala" class="shortcut">simple tests that we prepared here</a>
-        and dont forget to <a href="#test" class="shortcut">run them on your computer!</a>
+        Check out <a href="#code/src/test/scala/ServiceSpec.scala" class="shortcut">simple tests that we prepared</a>
+        and don't forget to <a href="#test" class="shortcut">run them on your computer!</a>
       </p>
       <p>
-        The interesting part of the test are:
+        The interesting parts of the tests are:
         <ul>
-          <li>the syntax of route checking</li>
-          <li>and the way mocking external requests</li>
+          <li>the syntax of route checking,</li>
+          <li><a href="#code/src/test/scala/ServiceSpec.scala:19" class="shortcut">the way external requests are mocked</a>.</li>
         </ul>
       </p>
-      <p>Next: <a href="#tutorial/13" class="shortcut">Tutorial Summary</a></p>
+      <p>Next: <a href="#tutorial/13" class="shortcut">Tutorial summary</a>.</p>
     </div>
   </body>
 </html>
 
 <div>
-    <h2>The End</h2>
+    <h2>Summary</h2>
 
     <p>
-        And that's it! A small microservice that uses <code>akka-http</code>, reponds to <code>GET</code> and <code>POST</code> requests with JSON and connects with external service HTTP endpoint.
+        And that's it! We hope you enjoyed this tutorial and learned how to write a small microservice that uses <code>akka-http</code>, responds to <code>GET</code> and <code>POST</code> requests with JSON and connects with external services through HTTP endpoint.
     </p>
 
     <p>Be sure to ping us on <a href="https://github.com/theiterators/akka-http-microservice" class="shortcut">Github</a> or <a href="https://twitter.com/luksow">Twitter</a> if you liked it or if you have any questions.</p>
