@@ -7,7 +7,7 @@ This project is intended to demonstrate how to use akka-http and Scala to write 
 * logging,
 * routing,
 * deconstructing requests,
-* unmarshaling JSON entities to Scala's case classes,
+* unmarshalling JSON entities to Scala's case classes,
 * marshaling Scala's case classes to JSON responses,
 * error handling,
 * issuing requests to external services,
