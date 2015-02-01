@@ -62,7 +62,7 @@ trait Service extends Protocols {
 
   def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnectionFlow).runWith(Sink.head)
 
-  def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
+  def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] =
     telizeRequest(RequestBuilding.Get(s"/geoip/$ip")).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[IpInfo].map(Right(_))
@@ -74,16 +74,15 @@ trait Service extends Protocols {
         }
       }
     }
-  }
 
-  val routes = {
+  val routes =
     logRequestResult("akka-http-microservice") {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
           complete {
-            fetchIpInfo(ip).map {
-              case Right(ipInfo) => ToResponseMarshallable(ipInfo)
-              case Left(errorMessage) => ToResponseMarshallable(BadRequest -> errorMessage)
+            fetchIpInfo(ip).map[ToResponseMarshallable] {
+              case Right(ipInfo) => ipInfo
+              case Left(errorMessage) => BadRequest -> errorMessage
             }
           }
         } ~
@@ -91,16 +90,15 @@ trait Service extends Protocols {
           complete {
             val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
             val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
-            ip1InfoFuture.zip(ip2InfoFuture).map {
-              case (Right(info1), Right(info2)) => ToResponseMarshallable(IpPairSummary(info1, info2))
-              case (Left(errorMessage), _) => ToResponseMarshallable(BadRequest -> errorMessage)
-              case (_, Left(errorMessage)) => ToResponseMarshallable(BadRequest -> errorMessage)
+            ip1InfoFuture.zip(ip2InfoFuture).map[ToResponseMarshallable] {
+              case (Right(info1), Right(info2)) => IpPairSummary(info1, info2)
+              case (Left(errorMessage), _) => BadRequest -> errorMessage
+              case (_, Left(errorMessage)) => BadRequest -> errorMessage
             }
           }
         }
       }
     }
-  }
 }
 
 object AkkaHttpMicroservice extends App with Service {
