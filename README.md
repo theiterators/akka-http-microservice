@@ -1,9 +1,9 @@
 # Akka HTTP microservice example
 
-This project is intended to demonstrate how to use akka-http and Scala to write a simple REST (micro)service. Typical tasks accomplished in this project includes:
+This project demonstrates the [Akka HTTP](http://doc.akka.io/docs/akka-stream-and-http-experimental/current/scala.html) library and Scala to write a simple REST (micro)service. The project shows the following tasks that are typical for most Akka HTTP-based projects:
 
 * starting standalone HTTP server,
-* handling simple, file-based configuration,
+* handling file-based configuration,
 * logging,
 * routing,
 * deconstructing requests,
@@ -13,7 +13,7 @@ This project is intended to demonstrate how to use akka-http and Scala to write 
 * issuing requests to external services,
 * testing with mocking of external services.
 
-Service provides two endpoints - one which gives GeoIP info for given IP and another for calculating geographical distance between given pair of IPs. Project uses great service named [Telize](http://www.telize.com/) which offers JSON IP and GeoIP REST API for free.
+The service in the template provides two REST endpoints - one which gives GeoIP info for given IP and another for calculating geographical distance between given pair of IPs. The project uses the service [Telize](http://www.telize.com/) which offers JSON IP and GeoIP REST API for free.
 
 ## Usage
 
@@ -24,7 +24,7 @@ $ sbt
 > ~re-start
 ```
 
-then you can start making requests:
+With the service up, you can start sending HTTP requests:
 
 ```
 $ curl http://localhost:9000/ip/8.8.8.8
@@ -59,7 +59,7 @@ $ curl -X POST -H 'Content-Type: application/json' http://localhost:9000/ip -d '
 
 ### Testing
 
-Run tests with sbt:
+Execute tests using `test` command:
 
 ```
 $ sbt
@@ -68,7 +68,7 @@ $ sbt
 
 ## Author & license
 
-If you have any questions regarding this project contact with:
+If you have any questions regarding this project contact:
 
 Łukasz Sowa <lukasz@theiterators.com> from [Iterators](http://www.theiterators.com).
 
