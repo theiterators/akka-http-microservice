@@ -81,9 +81,9 @@ trait Service extends Protocols {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
           complete {
-            fetchIpInfo(ip).map {
-              case Right(ipInfo) => ToResponseMarshallable(ipInfo)
-              case Left(errorMessage) => ToResponseMarshallable(BadRequest -> errorMessage)
+            fetchIpInfo(ip).map[ToResponseMarshallable] {
+              case Right(ipInfo) => ipInfo
+              case Left(errorMessage) => BadRequest -> errorMessage
             }
           }
         } ~
@@ -91,10 +91,10 @@ trait Service extends Protocols {
           complete {
             val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
             val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
-            ip1InfoFuture.zip(ip2InfoFuture).map {
-              case (Right(info1), Right(info2)) => ToResponseMarshallable(IpPairSummary(info1, info2))
-              case (Left(errorMessage), _) => ToResponseMarshallable(BadRequest -> errorMessage)
-              case (_, Left(errorMessage)) => ToResponseMarshallable(BadRequest -> errorMessage)
+            ip1InfoFuture.zip(ip2InfoFuture).map[ToResponseMarshallable] {
+              case (Right(info1), Right(info2)) => IpPairSummary(info1, info2)
+              case (Left(errorMessage), _) => BadRequest -> errorMessage
+              case (_, Left(errorMessage)) => BadRequest -> errorMessage
             }
           }
         }
