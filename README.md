@@ -15,6 +15,8 @@ This project demonstrates the [Akka HTTP](http://doc.akka.io/docs/akka-stream-an
 
 The service in the template provides two REST endpoints - one which gives GeoIP info for given IP and another for calculating geographical distance between given pair of IPs. The project uses the service [Telize](http://www.telize.com/) which offers JSON IP and GeoIP REST API for free.
 
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 ## Usage
 
 Start services with sbt:

@@ -1,3 +1,5 @@
+enablePlugins(JavaAppPackaging)
+
 name         := "akka-http-microservice"
 organization := "com.theiterators"
 version      := "1.0"
