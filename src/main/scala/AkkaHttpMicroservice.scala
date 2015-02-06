@@ -8,7 +8,7 @@ import akka.http.model.{HttpResponse, HttpRequest}
 import akka.http.model.StatusCodes._
 import akka.http.server.Directives._
 import akka.http.unmarshalling.Unmarshal
-import akka.stream.FlowMaterializer
+import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
 import akka.stream.scaladsl.{Sink, Source}
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -106,7 +106,7 @@ trait Service extends Protocols {
 object AkkaHttpMicroservice extends App with Service {
   override implicit val system = ActorSystem()
   override implicit val executor = system.dispatcher
-  override implicit val materializer = FlowMaterializer()
+  override implicit val materializer = ActorFlowMaterializer()
 
   override val config = ConfigFactory.load()
   override val logger = Logging(system, getClass)
