@@ -150,10 +150,11 @@
       <p>Notice that some of the dependencies are still in <code>experimental</code> phase — this means that their API can be subject to major changes.</p>
       <h3>plugins.sbt</h3>
       <p>
-        There are two plugins used in our project. These are:
+        There are three plugins used in our project. These are:
         <ul>
           <li><code>sbt-revolver</code> which is helpful for development. It recompiles and runs our microservice every time the code in files changes. Notice that it is initialized inside <code>build.sbt</code>.</li>
           <li><code>sbt-assembly</code> is a great library that lets us deploy our microservice as a single .jar file.</li>
+	  <li><code>sbt-native-packager</code> is needed by Heroku to stage the app.
         </ul>
       </p>
       <p>Next: As we know what are the dependencies of our project, let's see <a href="#tutorial/7">what is the minimal configuration needed for the project</a>.</p>
