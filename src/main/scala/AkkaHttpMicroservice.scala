@@ -1,13 +1,13 @@
 import akka.actor.ActorSystem
 import akka.event.{LoggingAdapter, Logging}
-import akka.http.Http
-import akka.http.client.RequestBuilding
-import akka.http.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.marshalling.ToResponseMarshallable
-import akka.http.model.{HttpResponse, HttpRequest}
-import akka.http.model.StatusCodes._
-import akka.http.server.Directives._
-import akka.http.unmarshalling.Unmarshal
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.{HttpResponse, HttpRequest}
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.typesafe.config.Config
