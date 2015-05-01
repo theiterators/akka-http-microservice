@@ -232,7 +232,7 @@
       <p>
         Using this feature requires:
         <ul>
-          <li><code>import akka.http.marshallers.sprayjson.SprayJsonSupport._</code>,</li>
+          <li><code>import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._</code>,</li>
           <li>declaring implicit JSON converters (here it's done inside <code>Protocols</code> trait).</li>
         </ul>
       </p>
@@ -279,7 +279,7 @@
           <li><code>path("ip"/"my")</code>  — filters the request by it's part of the URI relative to the hostname or <code>pathPrefix</code> directive in which it is nested,</li>
           <li><code>get</code> — filters GET requests,</li>
           <li><code>post</code> — filters POST requests,</li>
-          <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.server.Directives">many more.</a></li>
+          <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.scaladsl.server.Directives">many more.</a></li>
         </ul>
       </p>
       <h3>Deconstructing request</h3>
@@ -290,7 +290,7 @@
           <li><code>formFields('field1, 'field2)</code> — extracts form fields form POST request,</li>
           <li><code>headerValueByName("X-Auth-Token")</code> — extracts a header value by its name,</li>
           <li><code>path("member" / Segment / "books")</code> — the <code>Segment</code> part of the directive lets us extract a string from the URI,</li>
-          <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.server.Directives">many more.</a></li>
+          <li>and <a href="http://doc.akka.io/api/akka-stream-and-http-experimental/current/#akka.http.scaladsl.server.Directives">many more.</a></li>
         </ul>
         Directives can provide us with some values we can use later to prepare a response:
 
