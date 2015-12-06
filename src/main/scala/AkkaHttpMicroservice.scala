@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.math._
 import spray.json.DefaultJsonProtocol
 
-case class IpInfo(ip: String, country: Option[String], city: Option[String], latitude: Option[Double], longitude: Option[Double])
+case class IpInfo(ip: String, country_name: Option[String], city: Option[String], latitude: Option[Double], longitude: Option[Double])
 
 case class IpPairSummaryRequest(ip1: String, ip2: String)
 
@@ -58,18 +58,18 @@ trait Service extends Protocols {
   def config: Config
   val logger: LoggingAdapter
 
-  lazy val telizeConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(config.getString("services.telizeHost"), config.getInt("services.telizePort"))
+  lazy val freeGeoIpConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
+    Http().outgoingConnection(config.getString("services.freeGeoIpHost"), config.getInt("services.freeGeoIpPort"))
 
-  def telizeRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(telizeConnectionFlow).runWith(Sink.head)
+  def freeGeoIpRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(freeGeoIpConnectionFlow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
-    telizeRequest(RequestBuilding.Get(s"/geoip/$ip")).flatMap { response =>
+    freeGeoIpRequest(RequestBuilding.Get(s"/json/$ip")).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[IpInfo].map(Right(_))
         case BadRequest => Future.successful(Left(s"$ip: incorrect IP format"))
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"Telize request failed with status code ${response.status} and entity $entity"
+          val error = s"FreeGeoIP request failed with status code ${response.status} and entity $entity"
           logger.error(error)
           Future.failed(new IOException(error))
         }
