@@ -9,7 +9,7 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
   val akkaV       = "2.4.1"
-  val akkaStreamV = "2.0-M2"
+  val akkaStreamV = "2.0.1"
   val scalaTestV  = "2.2.5"
   Seq(
     "com.typesafe.akka" %% "akka-actor"                           % akkaV,
