@@ -1,108 +1,130 @@
 import akka.actor.ActorSystem
-import akka.event.{LoggingAdapter, Logging}
+import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.{HttpResponse, HttpRequest}
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ActorMaterializer, Materializer}
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import java.io.IOException
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.math._
+import com.typesafe.config.{Config, ConfigFactory}
+import expenses.repo.{ExpensesRepo, SlickExpensesRepo}
+import expenses.{Date, Expense}
+import slick.driver.{MySQLDriver, H2Driver}
+import slick.jdbc.JdbcBackend.Database
 import spray.json.DefaultJsonProtocol
 
-case class IpInfo(ip: String, country_name: Option[String], city: Option[String], latitude: Option[Double], longitude: Option[Double])
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
-case class IpPairSummaryRequest(ip1: String, ip2: String)
-
-case class IpPairSummary(distance: Option[Double], ip1Info: IpInfo, ip2Info: IpInfo)
-
-object IpPairSummary {
-  def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
-
-  private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
-    (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
-      case (Some(lat1), Some(lon1), Some(lat2), Some(lon2)) =>
-        // see http://www.movable-type.co.uk/scripts/latlong.html
-        val φ1 = toRadians(lat1)
-        val φ2 = toRadians(lat2)
-        val Δφ = toRadians(lat2 - lat1)
-        val Δλ = toRadians(lon2 - lon1)
-        val a = pow(sin(Δφ / 2), 2) + cos(φ1) * cos(φ2) * pow(sin(Δλ / 2), 2)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        Option(EarthRadius * c)
-      case _ => None
-    }
-  }
-
-  private val EarthRadius = 6371.0
-}
 
 trait Protocols extends DefaultJsonProtocol {
-  implicit val ipInfoFormat = jsonFormat5(IpInfo.apply)
-  implicit val ipPairSummaryRequestFormat = jsonFormat2(IpPairSummaryRequest.apply)
-  implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
+  implicit val dateFormat = jsonFormat2(Date.apply)
+  implicit val expenseFormat = jsonFormat5(Expense.apply)
 }
 
 trait Service extends Protocols {
   implicit val system: ActorSystem
+
   implicit def executor: ExecutionContextExecutor
+
   implicit val materializer: Materializer
 
   def config: Config
+
   val logger: LoggingAdapter
-
-  lazy val freeGeoIpConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(config.getString("services.freeGeoIpHost"), config.getInt("services.freeGeoIpPort"))
-
-  def freeGeoIpRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(freeGeoIpConnectionFlow).runWith(Sink.head)
-
-  def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
-    freeGeoIpRequest(RequestBuilding.Get(s"/json/$ip")).flatMap { response =>
-      response.status match {
-        case OK => Unmarshal(response.entity).to[IpInfo].map(Right(_))
-        case BadRequest => Future.successful(Left(s"$ip: incorrect IP format"))
-        case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
-          val error = s"FreeGeoIP request failed with status code ${response.status} and entity $entity"
-          logger.error(error)
-          Future.failed(new IOException(error))
-        }
-      }
-    }
-  }
+  val expensesRepo: ExpensesRepo
 
   val routes = {
-    logRequestResult("akka-http-microservice") {
-      pathPrefix("ip") {
-        (get & path(Segment)) { ip =>
+//    logRequestResult("akka-http-microservice") {
+      pathPrefix("expenses") {
+        (put & entity(as[Expense])) { e =>
           complete {
-            fetchIpInfo(ip).map[ToResponseMarshallable] {
-              case Right(ipInfo) => ipInfo
-              case Left(errorMessage) => BadRequest -> errorMessage
-            }
+            expensesRepo.add(e).map[ToResponseMarshallable](x => x)
           }
         } ~
-        (post & entity(as[IpPairSummaryRequest])) { ipPairSummaryRequest =>
-          complete {
-            val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
-            val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
-            ip1InfoFuture.zip(ip2InfoFuture).map[ToResponseMarshallable] {
-              case (Right(info1), Right(info2)) => IpPairSummary(info1, info2)
-              case (Left(errorMessage), _) => BadRequest -> errorMessage
-              case (_, Left(errorMessage)) => BadRequest -> errorMessage
+          (get & path("id" / Segment)) {
+            date =>
+              complete {
+                val eventualExpenses: Future[List[Expense]] = expensesRepo.get(Date(date.split('-')(0).toInt, date.split('-')(1).toInt))
+                eventualExpenses.map[ToResponseMarshallable](x => x)
+              }
+          } ~
+          (delete & path("id" / LongNumber)) { id =>
+            complete {
+              expensesRepo.delete(id).map(i => s"Removed $i expenses")
+            }
+          } ~
+          (post & path("id" / LongNumber)) {
+            id =>
+              entity(as[Expense]) {
+                expense =>
+                  if (expense.id.contains(id)) {
+                    complete {
+                      expensesRepo.update(expense)
+                    }
+                  } else {
+                    reject
+                  }
+              }
+          }
+      } ~ pathPrefix("purposes" / Segments(0, 1)) {
+        purpose =>
+          get {
+            val a: List[String] = purpose
+            complete {
+              val r = expensesRepo.purposes(purpose.headOption)
+              r.map[ToResponseMarshallable](x => x)
             }
           }
-        }
-      }
+      } ~ pathPrefix("search" / "from" / Segment / "to" / Segment) {
+        (from, to) =>
+          val a = Date(from)
+          val b = Date(to)
+          path("purpose" / Segment / "note" / Segment) {
+            (purpose, note) =>
+              get {
+                complete {
+                  val r = expensesRepo.get(a, b, Some(purpose), Some(note))
+                  r.map[ToResponseMarshallable](x => x)
+                }
+              }
+          } ~ path("note" / Segment / "purpose" / Segment) {
+            (note, purpose) =>
+              get {
+                complete {
+                  val r = expensesRepo.get(a, b, Some(purpose), Some(note))
+                  r.map[ToResponseMarshallable](x => x)
+                }
+              }
+          } ~
+            path("purpose" / Segment) {
+              purpose =>
+                get {
+                  complete {
+                    val r = expensesRepo.get(a, b, Some(purpose), None)
+                    r.map[ToResponseMarshallable](x => x)
+                  }
+                }
+            } ~
+            path("note" / Segment) {
+              note =>
+                get {
+                  complete {
+                    val r = expensesRepo.get(a, b, None, Some(note))
+                    r.map[ToResponseMarshallable](x => x)
+                  }
+                }
+            } ~
+            get {
+              complete {
+                val r = expensesRepo.get(a, b, None, None)
+                r.map[ToResponseMarshallable](x => x)
+              }
+            }
+//      }
     }
+
   }
 }
+
 
 object AkkaHttpMicroservice extends App with Service {
   override implicit val system = ActorSystem()
@@ -111,6 +133,10 @@ object AkkaHttpMicroservice extends App with Service {
 
   override val config = ConfigFactory.load()
   override val logger = Logging(system, getClass)
+
+  val db = Database.forConfig("mysqlDB")
+  private val driver: MySQLDriver.type = MySQLDriver
+  override val expensesRepo = new SlickExpensesRepo(driver, db)
 
   Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
 }
