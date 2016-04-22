@@ -85,30 +85,35 @@
     <div>
       <h2>The Geolocation IP responses</h2>
       <p>Responses should look like that:</p>
-      <pre><code>{
+      <pre><code>
+{
   "city": "Mountain View",
-  "ip": "8.8.8.8",
-  "latitude": 37.386,
-  "country_name": "United States",
-  "longitude": -122.0838
-}</code></pre>
+  "query": "8.8.8.8",
+  "country": "United States",
+  "lon": -122.0881,
+  "lat": 37.3845
+}
+      </code></pre>
       <p>for the first endpoint and</p>
-      <pre><code>{
-  "distance": 2201.448386715217,
+      <pre><code>
+{
+  "distance": 4347.6243474947,
   "ip1Info": {
     "city": "Mountain View",
-    "ip": "8.8.8.8",
-    "latitude": 37.386,
-    "country_name": "United States",
-    "longitude": -122.0838
+    "query": "8.8.8.8",
+    "country": "United States",
+    "lon": -122.0881,
+    "lat": 37.3845
   },
   "ip2Info": {
-    "ip": "8.8.4.4",
-    "country_name": "United States",
-    "latitude": 38.0,
-    "longitude": -97.0
+    "city": "Norwell",
+    "query": "93.184.216.34",
+    "country": "United States",
+    "lon": -70.8228,
+    "lat": 42.1508
   }
-}</code></pre>
+}
+      </code></pre>
       <p>for the second endpoint. Notice that they are pretty-printed. In the <a href="#run" class="shortcut">Run</a> tab you can see the request/response logs the app generates.</p>
       <p>Next: Now as we know what our microservice does <a href="#tutorial/5" class="shortcut">let's open up the code</a>.</p>
     </div>

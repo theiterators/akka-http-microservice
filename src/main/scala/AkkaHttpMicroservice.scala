@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.math._
 import spray.json.DefaultJsonProtocol
 
-case class IpInfo(ip: String, country_name: Option[String], city: Option[String], latitude: Option[Double], longitude: Option[Double])
+case class IpInfo(query: String, country: Option[String], city: Option[String], lat: Option[Double], lon: Option[Double])
 
 case class IpPairSummaryRequest(ip1: String, ip2: String)
 
@@ -27,7 +27,7 @@ object IpPairSummary {
   def apply(ip1Info: IpInfo, ip2Info: IpInfo): IpPairSummary = IpPairSummary(calculateDistance(ip1Info, ip2Info), ip1Info, ip2Info)
 
   private def calculateDistance(ip1Info: IpInfo, ip2Info: IpInfo): Option[Double] = {
-    (ip1Info.latitude, ip1Info.longitude, ip2Info.latitude, ip2Info.longitude) match {
+    (ip1Info.lat, ip1Info.lon, ip2Info.lat, ip2Info.lon) match {
       case (Some(lat1), Some(lon1), Some(lat2), Some(lon2)) =>
         // see http://www.movable-type.co.uk/scripts/latlong.html
         val φ1 = toRadians(lat1)
@@ -58,13 +58,13 @@ trait Service extends Protocols {
   def config: Config
   val logger: LoggingAdapter
 
-  lazy val freeGeoIpConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
-    Http().outgoingConnection(config.getString("services.freeGeoIpHost"), config.getInt("services.freeGeoIpPort"))
+  lazy val ipApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
+    Http().outgoingConnection(config.getString("services.ip-api.host"), config.getInt("services.ip-api.port"))
 
-  def freeGeoIpRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(freeGeoIpConnectionFlow).runWith(Sink.head)
+  def ipApiRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ipApiConnectionFlow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
-    freeGeoIpRequest(RequestBuilding.Get(s"/json/$ip")).flatMap { response =>
+    ipApiRequest(RequestBuilding.Get(s"/json/$ip")).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[IpInfo].map(Right(_))
         case BadRequest => Future.successful(Left(s"$ip: incorrect IP format"))
