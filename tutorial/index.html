@@ -177,10 +177,10 @@
       </p>
       <p>The Akka part of the configuration will let us see more log messages on the console when developing the microservice.</p>
       <p>HTTP interface needs to be given a interface that it will run on and port that will listen for new HTTP requests.</p>
-      <p>Our microservice uses external service <code>https://freegeoip.net</code> to find where the IP we're trying to find is.</p>
+      <p>Our microservice uses external service <code>http://ip-api.com/</code> to find where the IP we're trying to find is.</p>
       <p>
       When deploying microservice as a <code>.jar</code> file, one can overwrite the configuration values when running the jar.
-      <pre><code>java -jar microservice.jar -Dservices.freeGeoIpPort=8080</code></pre>
+      <pre><code>java -jar microservice.jar -Dservices.ip-api.port=8080</code></pre>
       <p>Using configuration management system is also recommended as amount of variables rises quickly. It is hard to maintain configuration files across more complex microservice architecture.</p>
       </p>
       <p>Next: Let's see how is our configuration used in <a href="#tutorial/8" class="shortcut">the code</a>.</p>
