@@ -3,13 +3,13 @@ enablePlugins(JavaAppPackaging)
 name := "akka-http-microservice"
 organization := "com.theiterators"
 version := "1.0"
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.3"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
-  val akkaV       = "2.4.16"
-  val akkaHttpV   = "10.0.1"
+  val akkaV       = "2.5.3"
+  val akkaHttpV   = "10.0.9"
   val scalaTestV  = "3.0.1"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
