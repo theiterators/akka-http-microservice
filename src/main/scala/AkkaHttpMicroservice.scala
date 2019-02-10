@@ -105,6 +105,8 @@ trait Service extends Protocols {
 }
 
 object AkkaHttpMicroservice extends App with Service {
+  Kamon.initialize()
+
   override implicit val system = ActorSystem()
   override implicit val executor = system.dispatcher
   override implicit val materializer = ActorMaterializer()
