@@ -60,7 +60,9 @@ trait Service extends Protocols {
 
   lazy val ipApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
     Http().outgoingConnection(config.getString("services.ip-api.host"), config.getInt("services.ip-api.port"))
-
+  
+  // Please note that using `Source.single(request).via(pool).runWith(Sink.head)` is considered anti-pattern. It's here only for the simplicity.
+  // See why and how to improve it here: https://github.com/theiterators/akka-http-microservice/issues/32
   def ipApiRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ipApiConnectionFlow).runWith(Sink.head)
 
   def fetchIpInfo(ip: String): Future[Either[String, IpInfo]] = {
