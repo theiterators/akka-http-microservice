@@ -29,7 +29,7 @@ Start services with sbt:
 
 ```
 $ sbt
-> ~re-start
+> ~reStart
 ```
 
 With the service up, you can start sending HTTP requests:
