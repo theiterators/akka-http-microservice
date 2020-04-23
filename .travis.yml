@@ -1,0 +1,31 @@
+sudo: false
+language: scala
+scala:
+  - 2.12.11
+  - 2.13.2
+  
+jdk: openjdk8
+
+cache:
+  directories:
+  - "$HOME/.m2/repository"
+  - "$HOME/.sbt"
+  - "$HOME/.ivy2"
+  - "$HOME/.coursier"
+  
+before_cache:
+- find $HOME/.sbt -name "*.lock" | xargs rm
+- find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+- rm -f $HOME/.ivy2/.sbt.ivy.lock
+
+script: sbt ++$TRAVIS_SCALA_VERSION test
+
+notifications:
+  email:
+    recipients:
+      - "lukasz@iterato.rs"
+  on_success: change
+  on_failure: always
+  on_error: always
+  on_start: never
+  on_cancel: never
