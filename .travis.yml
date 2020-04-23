@@ -1,7 +1,6 @@
 sudo: false
 language: scala
 scala:
-  - 2.12.11
   - 2.13.2
   
 jdk: openjdk8
