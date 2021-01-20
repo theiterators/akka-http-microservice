@@ -79,6 +79,6 @@ $ sbt
 
 If you have any questions regarding this project contact:
 
-Łukasz Sowa <lukasz@theiterators.com> from [Iterators](http://www.theiterators.com).
+Łukasz Sowa <lukasz@iteratorshq.com> from [Iterators](https://www.iteratorshq.com).
 
 For licensing info see LICENSE file in project's root directory.
