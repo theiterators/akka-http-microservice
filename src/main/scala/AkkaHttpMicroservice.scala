@@ -1,20 +1,21 @@
 import akka.actor.ActorSystem
-import akka.event.{LoggingAdapter, Logging}
+import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.{HttpResponse, HttpRequest}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
+import io.circe.{Decoder, Encoder}
+
 import java.io.IOException
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.math._
-import spray.json.DefaultJsonProtocol
 
 case class IpInfo(query: String, country: Option[String], city: Option[String], lat: Option[Double], lon: Option[Double])
 
@@ -43,10 +44,14 @@ object IpPairSummary {
   private val EarthRadius = 6371.0
 }
 
-trait Protocols extends DefaultJsonProtocol {
-  implicit val ipInfoFormat = jsonFormat5(IpInfo.apply)
-  implicit val ipPairSummaryRequestFormat = jsonFormat2(IpPairSummaryRequest.apply)
-  implicit val ipPairSummaryFormat = jsonFormat3(IpPairSummary.apply)
+trait Protocols extends ErrorAccumulatingCirceSupport {
+  import io.circe.generic.semiauto._
+  implicit val ipInfoDecoder: Decoder[IpInfo] = deriveDecoder
+  implicit val ipInfoEncoder: Encoder[IpInfo] = deriveEncoder
+  implicit val ipPairSummaryRequestDecoder: Decoder[IpPairSummaryRequest] = deriveDecoder
+  implicit val ipPairSummaryRequestEncoder: Encoder[IpPairSummaryRequest] = deriveEncoder
+  implicit val ipPairSummaryEncoder: Encoder[IpPairSummary] = deriveEncoder
+  implicit val ipPairSummaryDecoder: Decoder[IpPairSummary] = deriveDecoder
 }
 
 trait Service extends Protocols {
