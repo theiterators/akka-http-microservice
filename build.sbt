@@ -12,7 +12,7 @@ libraryDependencies ++= {
   val akkaV          = "2.6.12"
   val scalaTestV     = "3.2.3"
   val circeV         = "0.12.3"
-  val akkaHttpCirceV = "1.31.0"
+  val akkaHttpCirceV = "1.35.3"
 
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
