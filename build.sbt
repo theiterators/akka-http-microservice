@@ -17,11 +17,11 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
-    "com.typesafe.akka" %% "akka-testkit" % akkaV,
     "com.typesafe.akka" %% "akka-http" % akkaHttpV,
     "io.circe"          %% "circe-core" % circeV,
     "io.circe"          %% "circe-generic" % circeV,
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceV,
+    "com.typesafe.akka" %% "akka-testkit" % akkaV,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
   )

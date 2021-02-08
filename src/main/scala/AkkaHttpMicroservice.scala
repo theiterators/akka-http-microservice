@@ -6,6 +6,7 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.typesafe.config.Config
@@ -14,7 +15,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import io.circe.{Decoder, Encoder}
 
 import java.io.IOException
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.math._
 
 case class IpInfo(query: String, country: Option[String], city: Option[String], lat: Option[Double], lon: Option[Double])
@@ -56,7 +57,7 @@ trait Protocols extends ErrorAccumulatingCirceSupport {
 
 trait Service extends Protocols {
   implicit val system: ActorSystem
-  implicit def executor: ExecutionContextExecutor
+  implicit def executor: ExecutionContext
 
   def config: Config
   val logger: LoggingAdapter
@@ -82,7 +83,7 @@ trait Service extends Protocols {
     }
   }
 
-  val routes = {
+  val routes: Route = {
     logRequestResult("akka-http-microservice") {
       pathPrefix("ip") {
         (get & path(Segment)) { ip =>
@@ -110,8 +111,8 @@ trait Service extends Protocols {
 }
 
 object AkkaHttpMicroservice extends App with Service {
-  override implicit val system = ActorSystem()
-  override implicit val executor = system.dispatcher
+  override implicit val system: ActorSystem = ActorSystem()
+  override implicit val executor: ExecutionContext = system.dispatcher
 
   override val config = ConfigFactory.load()
   override val logger = Logging(system, getClass)
