@@ -3,7 +3,7 @@ enablePlugins(JavaAppPackaging)
 name := "akka-http-microservice"
 organization := "com.theiterators"
 version := "1.0"
-scalaVersion := "2.13.5"
+scalaVersion := "2.13.6"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
