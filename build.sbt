@@ -10,7 +10,7 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 libraryDependencies ++= {
   val akkaHttpV      = "10.2.4"
   val akkaV          = "2.6.14"
-  val scalaTestV     = "3.2.8"
+  val scalaTestV     = "3.2.9"
   val circeV         = "0.14.0"
   val akkaHttpCirceV = "1.36.0"
 
