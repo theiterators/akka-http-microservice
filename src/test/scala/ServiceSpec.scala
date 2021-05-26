@@ -6,23 +6,27 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
+import io.circe.parser.parse
 
-class ServiceSpec extends AsyncFlatSpec with Matchers with ScalatestRouteTest with Service with Protocols {
+class ServiceSpec extends AsyncFlatSpec with Matchers with ScalatestRouteTest with Service {
   override def testConfigSource = "akka.loglevel = WARNING"
   override def config = testConfig
   override val logger = NoLogging
 
-  val ip1Info = IpInfo("8.8.8.8", Option("United States"), Option("Mountain View"), Option(37.386), Option(-122.0838))
-  val ip2Info = IpInfo("8.8.4.4", Option("United States"), None, Option(38.0), Option(-97.0))
+  val ip1Info = IpInfo("8.8.8.8", Option("United States"), Option("Ashburn"), Option(39.03), Option(-77.5))
+  val ipApiResponse1 = parse("""{"query":"8.8.8.8","status":"success","continent":"North America","continentCode":"NA","country":"United States","countryCode":"US","region":"VA","regionName":"Virginia","city":"Ashburn","district":"","zip":"20149","lat":39.03,"lon":-77.5,"timezone":"America/New_York","offset":-14400,"currency":"USD","isp":"Google LLC","org":"Google Public DNS","as":"AS15169 Google LLC","asname":"GOOGLE","mobile":false,"proxy":false,"hosting":true}""")
+  val ip2Info = IpInfo("1.1.1.1", Option("Australia"), Option("South Brisbane"), Option(-27.4766), Option(153.0166))
+  val ipApiResponse2 = io.circe.parser.parse("""{"status":"success","country":"Australia","countryCode":"AU","region":"QLD","regionName":"Queensland","city":"South Brisbane","zip":"4101","lat":-27.4766,"lon":153.0166,"timezone":"Australia/Brisbane","isp":"Cloudflare, Inc","org":"APNIC and Cloudflare DNS Resolver project","as":"AS13335 Cloudflare, Inc.","query":"1.1.1.1"}""")
   val ipPairSummary = IpPairSummary(ip1Info, ip2Info)
+  val ipApiErrorResponse = parse("""{"status":"fail","message":"invalid query","query":"asdfg"}""")
 
   override lazy val ipApiConnectionFlow = Flow[HttpRequest].map { request =>
     if (request.uri.toString().endsWith(ip1Info.query))
-      HttpResponse(status = OK, entity = marshal(ip1Info))
+      HttpResponse(status = OK, entity = marshal(ipApiResponse1))
     else if(request.uri.toString().endsWith(ip2Info.query))
-      HttpResponse(status = OK, entity = marshal(ip2Info))
+      HttpResponse(status = OK, entity = marshal(ipApiResponse2))
     else
-      HttpResponse(status = BadRequest, entity = marshal("Bad ip format"))
+      HttpResponse(status = OK, entity = marshal(ipApiErrorResponse))
   }
 
   "Service" should "respond to single IP query" in {

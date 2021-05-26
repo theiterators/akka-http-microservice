@@ -193,8 +193,9 @@ This section of the tutorial explains:
 
 ## Scala types and protocols
 
-To see the usage of Scala types and protocols inside our microservice open up the [AkkaHttpMicroservice.scala](https://github.com/theiterators/akka-http-microservice/blob/master/src/main/scala/AkkaHttpMicroservice.scala#L20). We have two type of types there:
+To see the usage of Scala types and protocols inside our microservice open up the [AkkaHttpMicroservice.scala](https://github.com/theiterators/akka-http-microservice/blob/master/src/main/scala/AkkaHttpMicroservice.scala#L22). We have three type of types there:
 
+*   `IpApiResponse` and `IpApiResponseStatus` — a case class (with dedicated enum) that models external API response. 
 *   `IpPairSummaryRequest` — a case class that models our JSON HTTP request's body.
 *   `IpInfo` and `IpInfoSummary` — case classes are used as an intermediate form of data that can be converted to response JSON.
 
