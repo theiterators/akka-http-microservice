@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/theiterators/akka-http-microservice/master/COPYING)
 [![Build Status](https://travis-ci.org/theiterators/akka-http-microservice.svg?branch=master)](https://travis-ci.org/theiterators/akka-http-microservice)
 
-Hot update: [Experimental Scala 3 version](https://github.com/theiterators/akka-http-microservice/pull/81)!
+Hot update: it's now running on Scala 3!
 
 This project demonstrates the [Akka HTTP](https://doc.akka.io/docs/akka-http/current/?language=scala) library and Scala to write a simple REST (micro)service. The project shows the following tasks that are typical for most Akka HTTP-based projects:
 
