@@ -15,17 +15,18 @@ libraryDependencies ++= {
   val akkaHttpCirceV = "1.36.0"
 
   Seq(
-    "com.typesafe.akka" %  "akka-actor_2.13" % akkaV,
-    "com.typesafe.akka" %  "akka-stream_2.13" % akkaV,
-    "com.typesafe.akka" %  "akka-http_2.13" % akkaHttpV,
     "io.circe"          %% "circe-core" % circeV,
     "io.circe"          %% "circe-parser" % circeV,
     "io.circe"          %% "circe-generic" % circeV,
-    "de.heikoseeberger" % "akka-http-circe_2.13" % akkaHttpCirceV,
-    "com.typesafe.akka" %  "akka-testkit_2.13" % akkaV,
-    "com.typesafe.akka" %  "akka-http-testkit_2.13" % akkaHttpV % "test",
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
-  )
+  ) ++ Seq(
+    "com.typesafe.akka" %% "akka-actor" % akkaV,
+    "com.typesafe.akka" %% "akka-stream" % akkaV,
+    "com.typesafe.akka" %% "akka-http" % akkaHttpV,
+    "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceV,
+    "com.typesafe.akka" %% "akka-testkit" % akkaV,
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test"
+  ).map(_.cross(CrossVersion.for3Use2_13))
 }
 
 Revolver.settings
