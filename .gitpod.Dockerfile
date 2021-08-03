@@ -4,7 +4,7 @@ RUN echo 'unset JAVA_TOOL_OPTIONS' >> /home/gitpod/.bashrc.d/99-clear-java-tool-
 
 RUN curl -fLo cs https://git.io/coursier-cli-linux &&\
     chmod +x cs &&\
-    ./cs java --jvm adopt:1.8.0-252 --env >> /home/gitpod/.bashrc.d/90-cs &&\
+    ./cs java --jvm adopt:1.8.0-292 --env >> /home/gitpod/.bashrc.d/90-cs &&\
     ./cs install --env >> /home/gitpod/.bashrc.d/90-cs &&\
     ./cs install \
       ammonite:2.4.0 \
