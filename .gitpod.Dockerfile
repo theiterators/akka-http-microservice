@@ -9,6 +9,6 @@ RUN curl -fLo cs https://git.io/coursier-cli-linux &&\
     ./cs install \
       bloop \
       sbt-launcher \
-      scala:2.13.6 &&\
-    ./cs fetch org.scala-sbt:sbt:1.5.5 >/dev/null &&\
+      scala:2.13.6 \
+      sbt &&\
     rm -f cs
