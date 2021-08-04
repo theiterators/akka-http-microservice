@@ -8,7 +8,5 @@ RUN curl -fLo cs https://git.io/coursier-cli-linux &&\
     ./cs install --env >> /home/gitpod/.bashrc.d/90-cs &&\
     ./cs install \
       bloop \
-      sbt-launcher \
-      scala:2.13.6 \
       sbt &&\
     rm -f cs
