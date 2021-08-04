@@ -7,12 +7,8 @@ RUN curl -fLo cs https://git.io/coursier-cli-linux &&\
     ./cs java --jvm adopt:1.8.0-292 --env >> /home/gitpod/.bashrc.d/90-cs &&\
     ./cs install --env >> /home/gitpod/.bashrc.d/90-cs &&\
     ./cs install \
-      ammonite:2.4.0 \
       bloop \
-      cs \
       sbt-launcher \
-      scala:2.13.6 \
-      scalafmt:2.7.5 &&\
+      scala:2.13.6 &&\
     ./cs fetch org.scala-sbt:sbt:1.5.5 >/dev/null &&\
-    ./cs fetch coursier:2.0.16 >/dev/null &&\
     rm -f cs
