@@ -1,0 +1,18 @@
+pull_request_rules:
+  - name: assign and label scala-steward's PRs
+    conditions:
+      - author=scala-steward
+    actions:
+      assign:
+        users: [luksow]
+      label:
+        add: [dependency-update]
+  - name: merge Scala Steward's PRs
+    conditions:
+      - base=master
+      - author=scala-steward
+      - status-success=Build and Test (ubuntu-latest, 3.0.1, adopt@1.8)
+    actions:
+      merge:
+        method: squash
+        strict: true
