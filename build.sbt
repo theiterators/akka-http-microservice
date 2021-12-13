@@ -1,9 +1,13 @@
+import sbt.librarymanagement.ConflictWarning
+
 enablePlugins(JavaAppPackaging)
 
 name := "akka-http-microservice"
 organization := "com.theiterators"
 version := "1.0"
 scalaVersion := "3.1.0"
+
+conflictWarning := ConflictWarning.disable
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
