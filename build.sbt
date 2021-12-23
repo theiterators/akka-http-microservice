@@ -16,7 +16,7 @@ libraryDependencies ++= {
   val akkaV          = "2.6.18"
   val scalaTestV     = "3.2.10"
   val circeV         = "0.14.1"
-  val akkaHttpCirceV = "1.38.2"
+  val akkaHttpCirceV = "1.39.2"
 
   Seq(
     "io.circe"          %% "circe-core" % circeV,
