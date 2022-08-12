@@ -22,6 +22,7 @@ import scala.math._
 enum IpApiResponseStatus {
   case Success, Fail
 }
+
 case class IpApiResponse(status: IpApiResponseStatus, message: Option[String], query: String, country: Option[String], city: Option[String], lat: Option[Double], lon: Option[Double])
 
 case class IpInfo(query: String, country: Option[String], city: Option[String], lat: Option[Double], lon: Option[Double])
@@ -52,7 +53,9 @@ object IpPairSummary {
 }
 
 trait Protocols extends ErrorAccumulatingCirceSupport {
+
   import io.circe.generic.semiauto._
+
   implicit val ipApiResponseStatusDecoder: Decoder[IpApiResponseStatus] = Decoder.decodeString.map(s => IpApiResponseStatus.valueOf(s.capitalize))
   implicit val ipApiResponseDecoder: Decoder[IpApiResponse] = deriveDecoder
   implicit val ipInfoDecoder: Decoder[IpInfo] = deriveDecoder
@@ -65,14 +68,16 @@ trait Protocols extends ErrorAccumulatingCirceSupport {
 
 trait Service extends Protocols {
   implicit val system: ActorSystem
+
   implicit def executor: ExecutionContext
 
   def config: Config
+
   val logger: LoggingAdapter
 
   lazy val ipApiConnectionFlow: Flow[HttpRequest, HttpResponse, Any] =
     Http().outgoingConnection(config.getString("services.ip-api.host"), config.getInt("services.ip-api.port"))
-  
+
   // Please note that using `Source.single(request).via(pool).runWith(Sink.head)` is considered anti-pattern. It's here only for the simplicity.
   // See why and how to improve it here: https://github.com/theiterators/akka-http-microservice/issues/32
   def ipApiRequest(request: HttpRequest): Future[HttpResponse] = Source.single(request).via(ipApiConnectionFlow).runWith(Sink.head)
@@ -82,11 +87,11 @@ trait Service extends Protocols {
       response.status match {
         case OK =>
           Unmarshal(response.entity).to[IpApiResponse].map { ipApiResponse =>
-          ipApiResponse.status match {
-            case IpApiResponseStatus.Success => IpInfo(ipApiResponse.query,ipApiResponse.country, ipApiResponse.city, ipApiResponse.lat, ipApiResponse.lon)
-            case IpApiResponseStatus.Fail => s"""ip-api request failed with message: ${ipApiResponse.message.getOrElse("")}"""
+            ipApiResponse.status match {
+              case IpApiResponseStatus.Success => IpInfo(ipApiResponse.query, ipApiResponse.country, ipApiResponse.city, ipApiResponse.lat, ipApiResponse.lon)
+              case IpApiResponseStatus.Fail => s"""ip-api request failed with message: ${ipApiResponse.message.getOrElse("")}"""
+            }
           }
-        }
         case _ => Unmarshal(response.entity).to[String].flatMap { entity =>
           val error = s"ip-api request failed with status code ${response.status} and entity $entity"
           logger.error(error)
@@ -107,28 +112,29 @@ trait Service extends Protocols {
             }
           }
         } ~
-        (post & entity(as[IpPairSummaryRequest])) { ipPairSummaryRequest =>
-          complete {
-            val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
-            val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
-            ip1InfoFuture.zip(ip2InfoFuture).map[ToResponseMarshallable] {
-              case (info1: IpInfo, info2: IpInfo) => IpPairSummary(info1, info2)
-              case (errorMessage: String, _) => BadRequest -> errorMessage
-              case (_, errorMessage: String) => BadRequest -> errorMessage
+          (post & entity(as[IpPairSummaryRequest])) { ipPairSummaryRequest =>
+            complete {
+              val ip1InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip1)
+              val ip2InfoFuture = fetchIpInfo(ipPairSummaryRequest.ip2)
+              ip1InfoFuture.zip(ip2InfoFuture).map[ToResponseMarshallable] {
+                case (info1: IpInfo, info2: IpInfo) => IpPairSummary(info1, info2)
+                case (errorMessage: String, _) => BadRequest -> errorMessage
+                case (_, errorMessage: String) => BadRequest -> errorMessage
+              }
             }
           }
-        }
       }
     }
   }
 }
 
-object AkkaHttpMicroservice extends App with Service {
+
+object Server extends App with Service {
   override implicit val system: ActorSystem = ActorSystem()
   override implicit val executor: ExecutionContext = system.dispatcher
 
   override val config = ConfigFactory.load()
-  override val logger = Logging(system, "AkkaHttpMicroservice")
+  override val logger = Logging(system, "url_shortener")
 
   Http().newServerAt(config.getString("http.interface"), config.getInt("http.port")).bindFlow(routes)
 }
