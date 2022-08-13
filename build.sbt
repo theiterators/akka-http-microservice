@@ -26,15 +26,20 @@ libraryDependencies ++= {
     "io.circe" %% "circe-parser" % circeV,
     "io.circe" %% "circe-generic" % circeV,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-    "org.scalatest" %% "scalatest" % scalaTestV % "test"
+
+    "org.scalatest" %% "scalatest" % scalaTestV % Test,
   ) ++ Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
+    "com.typesafe.akka" %% "akka-actor-typed" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
     "com.typesafe.akka" %% "akka-http" % akkaHttpV,
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceV,
-    "com.typesafe.akka" %% "akka-testkit" % akkaV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "com.github.etaty" %% "rediscala" % rediscalaVersion,
+
+    "com.typesafe.akka" %% "akka-testkit" % akkaV % Test,
+    "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaV % Test,
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test,
+
   ).map(_.cross(CrossVersion.for3Use2_13))
 }
 
