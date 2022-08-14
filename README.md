@@ -74,5 +74,5 @@ custom alphabet and unguessable. This has a cost in bits.
 
 Available bits determined experimentally are 40. So, 8 bits are lost.
 Each block is 16 bit. The others 24 will be used for the block identification.
-If no block is lost, the system has 2^40 avalaible request, more or less 10^12.
+If no block is lost, the system has 2^40 available requests, more or less 10^12.
 Supposing 10^6 requests per day, the system can set a shortened live time of 27397 years.  
