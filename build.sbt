@@ -19,6 +19,7 @@ libraryDependencies ++= {
   val akkaHttpCirceV = "1.39.2"
   val rediscalaVersion = "1.9.0"
   val scalaLoggingVersion = "3.9.4"
+  val scalacticVersion = "3.2.13"
 
 
   Seq(
@@ -28,6 +29,7 @@ libraryDependencies ++= {
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
+
   ) ++ Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-actor-typed" % akkaV,
@@ -39,6 +41,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaV % Test,
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaV % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test,
+    "org.scalatest" %% "scalatest" % scalaTestV % Test,
 
   ).map(_.cross(CrossVersion.for3Use2_13))
 }
