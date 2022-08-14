@@ -11,6 +11,8 @@ conflictWarning := ConflictWarning.disable
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
+resolvers += "Nexus" at "https://oss.sonatype.org/content/repositories/snapshots"
+
 libraryDependencies ++= {
   val akkaHttpV = "10.2.9"
   val akkaV = "2.6.19"
@@ -19,7 +21,7 @@ libraryDependencies ++= {
   val akkaHttpCirceV = "1.39.2"
   val rediscalaVersion = "1.9.0"
   val scalaLoggingVersion = "3.9.4"
-  val scalacticVersion = "3.2.13"
+  val picoHashidsVersion = "4.5.153"
 
 
   Seq(
@@ -37,6 +39,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http" % akkaHttpV,
     "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceV,
     "com.github.etaty" %% "rediscala" % rediscalaVersion,
+    "com.dispalt" %% "pico-hashids" % picoHashidsVersion,
 
     "com.typesafe.akka" %% "akka-testkit" % akkaV % Test,
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaV % Test,
