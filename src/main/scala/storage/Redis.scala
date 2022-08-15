@@ -15,10 +15,14 @@ class Redis(host: String = "127.0.0.1", port: Int = 6379)(implicit val actorSyst
 
   private val redis = RedisClient(host = host, port = port)
 
-  override def save(key: String, obj: String)(implicit encoder: Encoder[String]): Future[Boolean] =
+  override def save[T](key: String, obj: T)(implicit encoder: Encoder[T]): Future[Boolean] =
     redis.set(key, obj.asJson.noSpaces)
 
-  override def get(key: String)(implicit decoder: Decoder[String]): Future[Option[String]] =
-    redis.get(key).map(_.flatMap(v => decode[String](v.utf8String).toOption))
+  override def get[T](key: String)(implicit decoder: Decoder[T]): Future[Option[T]] =
+    redis.get(key).map(_.flatMap(v => decode[T](v.utf8String).toOption))
+
+  def incBy[T](key: String, inc: Long)(implicit encoder: Encoder[T]): Future[Long] =
+    redis.incrby(key, inc)
+
 
 }

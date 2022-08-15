@@ -4,55 +4,58 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.AbstractBehavior
+import akka.actor.typed.scaladsl.AskPattern.*
+import akka.util.Timeout
+
+import scala.concurrent.Future
+import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 
 object IdGenerator {
   sealed trait Command
 
   final case class GetValue(replyTo: ActorRef[Option[Long]]) extends Command
 
-  def create(serverId: Byte): Behavior[Command] = {
+  final case class TakeBlocks(possibleBlocks: Option[ServerBlocks]) extends Command
+
+  def create(serverId: String): Behavior[Command] = {
     Behaviors.setup(context => new IdGenerator(context, serverId))
   }
 }
 
-/*
-Generate 7 Bytes number id
-First: Server identifier
-Next 4: Lower bytes of milliseconds from 1970.01.01
-Next 2: Sequence in the millisecond
 
-Maximum 256 servers
-The identifier can repeat every 78 years
-Each server can generate 0xFFFD maximum per millisecond
-
-*/
-
-class IdGenerator(context: ActorContext[IdGenerator.Command], serverId: Byte)
+class IdGenerator(context: ActorContext[IdGenerator.Command],
+                  val serverId: String,
+                  val blockManagerRef: ActorRef[BlockManager]
+                 )
   extends AbstractBehavior[IdGenerator.Command](context) {
 
   import IdGenerator.*
 
-  private val _serverId: Long = serverId
-  private var lastMillisecond = 0
-  private var sequence: Short = Short.MinValue
+  implicit val timeout: Timeout = Timeout(FiniteDuration(1, MILLISECONDS))
+
+  private var blocks: ServerBlocks = Future.wait(blockManagerRef.ask(ref =>
+    BlockManager.GetSavedOrCreate(serverId, context.self))).get
+  private var block: Int = blocks.block1.blockIndex
+  private var sequence: Short = blocks.block1.sequenceIndex.getOrElse(Short.MinValue)
 
   def generate(): Option[Long] = {
-    val currentMillisecond = System.currentTimeMillis().toInt
-    if (currentMillisecond > lastMillisecond) {
-      lastMillisecond = currentMillisecond
+    if (sequence == Short.MaxValue) {
+      block = blocks.block2.blockIndex
       sequence = Short.MinValue
-    } else if (currentMillisecond < lastMillisecond ||
-      (currentMillisecond == lastMillisecond && sequence == Short.MaxValue))
-      return None
-
+      blockManagerRef ! BlockManager.Renovate(serverId, blocks, context.self)
+    }
     sequence = (sequence + 1).toShort
-    return Some(_serverId << 48 | currentMillisecond << 16 | sequence)
+    return Some(block << 16 | sequence)
   }
 
   override def onMessage(msg: Command): Behavior[Command] = {
     msg match {
       case GetValue(replyTo) =>
         replyTo ! generate()
+        this
+      case TakeBlocks(possibleBlocks) =>
+        // TODO log no block available
+        blocks = possibleBlocks.get
         this
     }
   }
