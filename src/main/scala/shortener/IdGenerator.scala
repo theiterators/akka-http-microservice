@@ -1,5 +1,6 @@
 package shortener
 
+import akka.actor.typed
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
 import akka.actor.typed.scaladsl.Behaviors
@@ -17,7 +18,7 @@ object IdGenerator {
 
   final case class TakeBlocks(possibleBlocks: Option[ServerBlocks]) extends Command
 
-  def create(serverId: String): Behavior[Command] = {
+  def create(serverId: String, blockManagerRef: ActorRef[BlockManager]): Behavior[Command] = {
     Behaviors.setup(context => new IdGenerator(context, serverId))
   }
 }
@@ -26,7 +27,7 @@ object IdGenerator {
 class IdGenerator(context: ActorContext[IdGenerator.Command],
                   val serverId: String,
                   val blockManagerRef: ActorRef[BlockManager]
-                 )
+                 )(implicit system: typed.ActorSystem[Nothing])
   extends AbstractBehavior[IdGenerator.Command](context) {
 
   import IdGenerator.*

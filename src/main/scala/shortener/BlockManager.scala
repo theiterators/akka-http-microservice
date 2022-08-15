@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import storage.Storage
 import scala.concurrent.Future
 import io.circe._, io.circe.generic.semiauto._
+import concurrent.ExecutionContext.Implicits.global
 
 case class BlockStatus(blockIndex: Int, sequenceIndex: Option[Short])
 
@@ -35,15 +36,15 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   def getSavedOrCreate(serverId: String): Future[Option[ServerBlocks]] = {
     val blocksId = s"blocks:$serverId"
     val saved: Future[Option[ServerBlocks]] = storage.get(blocksId)(deriveDecoder[ServerBlocks])
-    saved.map {
-      case possibleBlocks@Some(blocks) => possibleBlocks
-      case None => renovate(serverId).flatten
+    saved.flatMap {
+      case possibleBlocks@Some(blocks) => Future(possibleBlocks)
+      case None => renovate(serverId)
     }
   }
 
   def save(serverId: String, blocks: ServerBlocks): Future[Boolean] = {
     val blocksId = s"blocks:$serverId"
-    storage.save(blocksId, blocks)
+    storage.save(blocksId, blocks)(deriveEncoder[ServerBlocks])
   }
 
   // TODO Management of expired blocks
@@ -51,11 +52,12 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   Future[Option[ServerBlocks]] = {
 
     def reserveNewBlocks(): Future[Option[ServerBlocks]] = {
-      val futureIndex = storage.incBy(reservedBlocksKey, 2)
+      val futureIndex = storage.incBy(reservedBlocksKey, 2)(deriveDecoder[Long])
+      // TODO Manage 24 bits limit
       futureIndex.map(index => {
         val blocks = ServerBlocks(
-          BlockStatus(index - 1, None),
-          BlockStatus(index, None),
+          BlockStatus(index.toInt - 1, None),
+          BlockStatus(index.toInt, None),
         )
         save(serverId, blocks) // TODO check saved ok
         Some(blocks)
@@ -64,9 +66,9 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
     }
 
     def renovateBlocks(previosBlocks: ServerBlocks): Future[Option[ServerBlocks]] = {
-      val futureIndex = storage.incBy(reservedBlocksKey, 1)
+      val futureIndex = storage.incBy(reservedBlocksKey, 1)(deriveDecoder[Long])
       futureIndex.map(index => {
-        val blocks = ServerBlocks(previosBlocks.block2, BlockStatus(index, None))
+        val blocks = ServerBlocks(previosBlocks.block2, BlockStatus(index.toInt, None))
         save(serverId, blocks) // TODO check saved ok
         Some(blocks)
       })
@@ -88,7 +90,7 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
         replyTo ! save(serverId, blocks)
         this
       case Renovate(serverId, blocks, replyTo) =>
-        replyTo ! renovate(serverId, blocks)
+        replyTo ! renovate(serverId, Some(blocks))
         this
     }
   }
