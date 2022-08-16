@@ -11,6 +11,7 @@ import scala.concurrent.ExecutionContext
 import org.scalatest.wordspec.AnyWordSpecLike
 import akka.actor.typed.scaladsl.AskPattern.*
 import akka.util.Timeout
+import storage.Redis
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
@@ -20,7 +21,7 @@ class IdGeneratorTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfter
 
   behavior of "IdGenerator"
 
-  val testKit = ActorTestKit()
+  val testKit: ActorTestKit = ActorTestKit()
   private implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val timeout: Timeout = Timeout(FiniteDuration(1, MILLISECONDS))
   implicit val system: typed.ActorSystem[Nothing] = testKit.system
@@ -28,9 +29,9 @@ class IdGeneratorTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfter
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
-  val redis = storage.Redis()
-  val blockManager = testKit.spawn(BlockManager.create(redis))
-  val generator = testKit.spawn(IdGenerator.create(serverId = "1", blockManager))
+  val redis: Redis = storage.Redis()
+  val blockManager: ActorRef[BlockManager.Command] = testKit.spawn(BlockManager.create(redis))
+  val generator: ActorRef[IdGenerator.Command] = testKit.spawn(IdGenerator.create(serverId = "1", blockManager))
 
   "IdGenerator" should "generate an id" in {
     Given("The generator")
