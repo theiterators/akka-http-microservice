@@ -8,7 +8,7 @@ import akka.actor.typed.scaladsl.AbstractBehavior
 import akka.actor.typed.scaladsl.AskPattern.*
 import akka.util.Timeout
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 
 object IdGenerator {
@@ -18,15 +18,18 @@ object IdGenerator {
 
   final case class TakeBlocks(possibleBlocks: Option[ServerBlocks]) extends Command
 
-  def create(serverId: String, blockManagerRef: ActorRef[BlockManager]): Behavior[Command] = {
-    Behaviors.setup(context => new IdGenerator(context, serverId))
+  final case class BlocksSaved(ok: Boolean) extends Command
+
+  def create(serverId: String, blockManagerRef: ActorRef[BlockManager.Command])
+            (implicit system: typed.ActorSystem[Nothing]): Behavior[Command] = {
+    Behaviors.setup(context => new IdGenerator(context, serverId, blockManagerRef))
   }
 }
 
 
 class IdGenerator(context: ActorContext[IdGenerator.Command],
                   val serverId: String,
-                  val blockManagerRef: ActorRef[BlockManager]
+                  val blockManagerRef: ActorRef[BlockManager.Command]
                  )(implicit system: typed.ActorSystem[Nothing])
   extends AbstractBehavior[IdGenerator.Command](context) {
 
@@ -34,8 +37,9 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
 
   implicit val timeout: Timeout = Timeout(FiniteDuration(1, MILLISECONDS))
 
-  private var blocks: ServerBlocks = Future.wait(blockManagerRef.ask(ref =>
-    BlockManager.GetSavedOrCreate(serverId, context.self))).get
+  private val futureTakeBlocks: Future[TakeBlocks] = blockManagerRef.ask(ref =>
+    BlockManager.GetSavedOrCreate(serverId, context.self))
+  private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(1, MILLISECONDS)).possibleBlocks.get
   private var block: Int = blocks.block1.blockIndex
   private var sequence: Short = blocks.block1.sequenceIndex.getOrElse(Short.MinValue)
 

@@ -9,7 +9,7 @@ trait Storage {
 
   def get[T](key: String)(implicit decoder: Decoder[T]): Future[Option[T]]
 
-  def incBy[T](key: String, inc: Long)(implicit encoder: Encoder[T]): Future[Long]
+  def incBy(key: String, inc: Long): Future[Long]
 
 
 }

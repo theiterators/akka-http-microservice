@@ -16,7 +16,7 @@ object BlockManager {
 
   final case class GetSavedOrCreate(serverId: String, replyTo: ActorRef[IdGenerator.TakeBlocks]) extends Command
 
-  final case class Save(serverId: String, blocks: ServerBlocks, replyTo: ActorRef[Boolean]) extends Command
+  final case class Save(serverId: String, blocks: ServerBlocks, replyTo: ActorRef[IdGenerator.BlocksSaved]) extends Command
 
   final case class Renovate(serverId: String, blocks: ServerBlocks, replyTo: ActorRef[IdGenerator.TakeBlocks]) extends Command
 
@@ -52,7 +52,7 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   Future[Option[ServerBlocks]] = {
 
     def reserveNewBlocks(): Future[Option[ServerBlocks]] = {
-      val futureIndex = storage.incBy(reservedBlocksKey, 2)(deriveDecoder[Long])
+      val futureIndex = storage.incBy(reservedBlocksKey, 2)
       // TODO Manage 24 bits limit
       futureIndex.map(index => {
         val blocks = ServerBlocks(
@@ -66,7 +66,7 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
     }
 
     def renovateBlocks(previosBlocks: ServerBlocks): Future[Option[ServerBlocks]] = {
-      val futureIndex = storage.incBy(reservedBlocksKey, 1)(deriveDecoder[Long])
+      val futureIndex = storage.incBy(reservedBlocksKey, 1)
       futureIndex.map(index => {
         val blocks = ServerBlocks(previosBlocks.block2, BlockStatus(index.toInt, None))
         save(serverId, blocks) // TODO check saved ok
@@ -84,13 +84,13 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   override def onMessage(msg: Command): Behavior[Command] = {
     msg match {
       case GetSavedOrCreate(serverId, replyTo) =>
-        replyTo ! getSavedOrCreate(serverId)
+        getSavedOrCreate(serverId).foreach(possibleBlocks => replyTo ! IdGenerator.TakeBlocks(possibleBlocks))
         this
       case Save(serverId, blocks, replyTo) =>
-        replyTo ! save(serverId, blocks)
+        save(serverId, blocks).foreach(ok => replyTo ! IdGenerator.BlocksSaved(ok))
         this
       case Renovate(serverId, blocks, replyTo) =>
-        replyTo ! renovate(serverId, Some(blocks))
+        renovate(serverId, Some(blocks)).foreach(possibleBlocks => IdGenerator.TakeBlocks(possibleBlocks))
         this
     }
   }

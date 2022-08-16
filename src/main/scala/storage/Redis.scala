@@ -21,7 +21,7 @@ class Redis(host: String = "127.0.0.1", port: Int = 6379)(implicit val actorSyst
   override def get[T](key: String)(implicit decoder: Decoder[T]): Future[Option[T]] =
     redis.get(key).map(_.flatMap(v => decode[T](v.utf8String).toOption))
 
-  def incBy[T](key: String, inc: Long)(implicit encoder: Encoder[T]): Future[Long] =
+  override def incBy(key: String, inc: Long): Future[Long] =
     redis.incrby(key, inc)
 
 

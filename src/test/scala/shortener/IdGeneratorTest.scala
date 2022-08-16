@@ -5,6 +5,7 @@ import org.scalatest.{BeforeAndAfterAll, GivenWhenThen, *}
 import flatspec.*
 import org.scalatest.matchers.should.Matchers.*
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
+import akka.actor.typed.ActorRef
 
 import scala.concurrent.ExecutionContext
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -28,7 +29,7 @@ class IdGeneratorTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfter
 
   "IdGenerator" should "generate an id" in {
     Given("A generator")
-    val generator = testKit.spawn(IdGenerator.create(serverId = 1))
+    val generator: ActorRef[IdGenerator.Command] = testKit.spawn(IdGenerator.create(serverId = 1))
 
     When("Ask for a new id")
     val futurePossibleId: Future[Option[Long]] = generator.ask(ref => IdGenerator.GetValue(ref))
