@@ -3,7 +3,10 @@ package storage
 import akka.actor.ActorSystem
 import org.scalatest.*
 import flatspec.*
+import io.circe._, io.circe.generic.semiauto._
 import org.scalatest.matchers.should.Matchers.*
+
+
 import scala.concurrent.ExecutionContext
 
 class RedisTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfterAll {
@@ -22,7 +25,7 @@ class RedisTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfterAll {
     val value = "test_value"
 
     When("Saved and load from redis")
-    val futureValue = redis.save(key, value).flatMap(_ => redis.get(key))
+    val futureValue = redis.save(key, value).flatMap(_ => redis.get(key)(deriveDecoder[String]))
 
     Then("The value is the original")
     futureValue.map(v => assert(v.contains(value)))

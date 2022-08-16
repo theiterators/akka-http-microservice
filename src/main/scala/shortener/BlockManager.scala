@@ -20,7 +20,7 @@ object BlockManager {
 
   final case class Renovate(serverId: String, blocks: ServerBlocks, replyTo: ActorRef[IdGenerator.TakeBlocks]) extends Command
 
-  def create(serverId: String, storage: Storage): Behavior[Command] = {
+  def create(storage: Storage): Behavior[Command] = {
     Behaviors.setup(context => new BlockManager(context, storage))
   }
 }

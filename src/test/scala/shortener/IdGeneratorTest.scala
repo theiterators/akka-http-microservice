@@ -24,12 +24,17 @@ class IdGeneratorTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfter
   private implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val timeout: Timeout = Timeout(FiniteDuration(1, MILLISECONDS))
   implicit val system: typed.ActorSystem[Nothing] = testKit.system
+  private implicit val actorSystem: ActorSystem = ActorSystem()
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
+  val redis = storage.Redis()
+  val blockManager = testKit.spawn(BlockManager.create(redis))
+  val generator = testKit.spawn(IdGenerator.create(serverId = "1", blockManager))
+
   "IdGenerator" should "generate an id" in {
-    Given("A generator")
-    val generator: ActorRef[IdGenerator.Command] = testKit.spawn(IdGenerator.create(serverId = 1))
+    Given("The generator")
+
 
     When("Ask for a new id")
     val futurePossibleId: Future[Option[Long]] = generator.ask(ref => IdGenerator.GetValue(ref))
@@ -39,8 +44,7 @@ class IdGeneratorTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfter
   }
 
   "IdGenerator generated ids" should "be crescent" in {
-    Given("A generator")
-    val generator = testKit.spawn(IdGenerator.create(serverId = 1))
+    Given("The generator")
 
     When("Ask for 2 ids")
     val futurePossibleId1: Future[Option[Long]] = generator.ask(ref => IdGenerator.GetValue(ref))
