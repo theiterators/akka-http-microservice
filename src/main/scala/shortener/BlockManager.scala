@@ -38,8 +38,10 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
     val blocksId = s"blocks:$serverId"
     val saved: Future[Option[ServerBlocks]] = storage.get(blocksId)(deriveDecoder[ServerBlocks])
     saved.flatMap {
-      case possibleBlocks@Some(_) => Future(possibleBlocks)
-      case None => renovate(serverId)
+      case possibleBlocks@Some(blocks) if
+        blocks.block1.possibleSequenceIndex.isDefined
+        => Future(possibleBlocks)
+      case _ => renovate(serverId)
     }
   }
 
@@ -76,8 +78,12 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
     }
 
     possibleOldBlocks.match {
-      case Some(blocks) => renovateBlocks(blocks)
-      case None => reserveNewBlocks()
+      case Some(blocks) =>
+        context.log.info(s"Renovating blocks: $blocks")
+        renovateBlocks(blocks)
+      case None =>
+        context.log.info("Reserving new blocks")
+        reserveNewBlocks()
     }
 
   }

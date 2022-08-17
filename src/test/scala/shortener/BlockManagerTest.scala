@@ -21,7 +21,7 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
 
   val testKit: ActorTestKit = ActorTestKit()
   private implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val timeout: Timeout = Timeout(FiniteDuration(100, MILLISECONDS))
+  implicit val timeout: Timeout = Timeout(FiniteDuration(200, MILLISECONDS))
   implicit val system: typed.ActorSystem[Nothing] = testKit.system
   private implicit val actorSystem: ActorSystem = ActorSystem()
 
@@ -98,14 +98,14 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
   }
 
   it should "return new block is are not saved" in {
-    Given("A new server id")
+    Given("a new server id")
     val serverId = s"TestServerId_${LocalDateTime.now()}"
 
-    When("Ask for the server blocks")
+    When("ask for the server blocks")
     val fistTakeBlocks: Future[IdGenerator.TakeBlocks] =
       blockManager.ask(ref => BlockManager.GetSavedOrCreate(serverId, ref))
 
-    And("Ask again without saving")
+    And("ask again without saving")
     val futureNewBlocks: Future[IdGenerator.TakeBlocks] =
       fistTakeBlocks.flatMap(_ =>
         blockManager.ask(ref => BlockManager.GetSavedOrCreate(serverId, ref))
