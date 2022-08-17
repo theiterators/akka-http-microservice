@@ -20,7 +20,7 @@ class RedisTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAfterAll 
 
   override def afterAll(): Unit = actorSystem.terminate()
 
-  "Redis" should "retrieve the value associate with the key" in {
+  it should "retrieve the value associate with the key" in {
     Given("key and value")
     val key = "redis_test_key"
     val value = "redis_test_value"
@@ -47,7 +47,7 @@ class RedisRestartTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfte
   "Redis server" should "keep the value when restart" in {
     Given("key and value")
     val key = "redis_test_restart_key"
-    val value = s"redis_test_restart_value: ${LocalDateTime.now()} "
+    val value = s"redis_test_restart_value: ${LocalDateTime.now()}"
 
     When("Save")
     Await.result(redis.save(key, value)(Encoder[String]), FiniteDuration(1, SECONDS))

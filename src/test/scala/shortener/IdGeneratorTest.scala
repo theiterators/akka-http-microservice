@@ -6,7 +6,6 @@ import flatspec.*
 import org.scalatest.matchers.should.Matchers.*
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorRef
-
 import scala.concurrent.ExecutionContext
 import org.scalatest.wordspec.AnyWordSpecLike
 import akka.actor.typed.scaladsl.AskPattern.*

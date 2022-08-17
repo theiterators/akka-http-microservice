@@ -41,7 +41,7 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
     BlockManager.GetSavedOrCreate(serverId, context.self))
   private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(1, MILLISECONDS)).possibleBlocks.get
   private var block: Int = blocks.block1.blockIndex
-  private var sequence: Short = blocks.block1.sequenceIndex.getOrElse(Short.MinValue)
+  private var sequence: Short = blocks.block1.possibleSequenceIndex.getOrElse(Short.MinValue)
 
   def generate(): Option[Long] = {
     if (sequence == Short.MaxValue) {

@@ -136,5 +136,6 @@ object Server extends App with Service {
   override val config = ConfigFactory.load()
   override val logger = Logging(system, "url_shortener")
 
-  Http().newServerAt(config.getString("http.interface"), config.getInt("http.port")).bindFlow(routes)
+  Http().newServerAt(config.getString("http.interface"),
+    config.getInt("http.port")).bindFlow(routes)
 }

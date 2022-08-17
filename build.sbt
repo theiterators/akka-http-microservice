@@ -31,7 +31,7 @@ libraryDependencies ++= {
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
 
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
-
+    "org.scalatest" %% "scalatest-flatspec" % scalaTestV % Test,
   ) ++ Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-actor-typed" % akkaV,
@@ -41,12 +41,10 @@ libraryDependencies ++= {
     "com.github.etaty" %% "rediscala" % rediscalaVersion,
     "com.dispalt" %% "pico-hashids" % picoHashidsVersion,
 
-    "com.typesafe.akka" %% "akka-testkit" % akkaV % Test,
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaV % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test,
-    "org.scalatest" %% "scalatest" % scalaTestV % Test,
-
   ).map(_.cross(CrossVersion.for3Use2_13))
 }
 
+Test / scalacOptions += "-Wconf:msg=is not declared `infix`:s,msg=is declared 'open':s"
 Revolver.settings
