@@ -1,4 +1,4 @@
-package shortener
+package id_generator
 
 import akka.actor.typed
 import akka.actor.typed.{ActorRef, Behavior}

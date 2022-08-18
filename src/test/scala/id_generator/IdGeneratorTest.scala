@@ -1,4 +1,4 @@
-package shortener
+package id_generator
 
 import akka.actor.{ActorSystem, typed}
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen, *}

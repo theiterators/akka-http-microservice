@@ -1,4 +1,4 @@
-package shortener
+package id_generator
 
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorRef

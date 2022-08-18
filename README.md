@@ -72,8 +72,8 @@ The encoding used is https://github.com/pico-works/pico-hashids.
 It produces minimal shorted urls and has another goodies like personalization,
 custom alphabet and unguessable. This has a cost in bits.
 
-Available bits using pico-hashids was determined experimentally, 40.
-So, 8 bits are lost.
-Each block is 16 bit. The others 24 are used for the block identification.
-If no block is lost, the system has 2^40 available requests, more or less 10^12.
-Supposing 10^6 requests per day, the system can set a shortened live time of 27397 years.  
+Available bits using pico-hashids with 64 chars was determined experimentally. It is 36.
+So, 12 bits are lost.
+Each block is 16 bit. The others 20 are used for the block identification.
+If no block is lost, the system has 2^36 available requests, more or less 68*10^6.
+Supposing 10^6 requests per day, the system can set a shortened live time of 2 months.  
