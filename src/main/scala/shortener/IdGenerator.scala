@@ -18,7 +18,7 @@ object IdGenerator {
 
   final case class TakeBlocks(possibleBlocks: Option[ServerBlocks]) extends Command
 
-  final case class BlocksSaved(ok: Boolean) extends Command
+  final case class BlocksSaved(was_ok: Boolean) extends Command
 
   def create(serverId: String, blockManagerRef: ActorRef[BlockManager.Command])
             (implicit system: typed.ActorSystem[Nothing]): Behavior[Command] = {
@@ -39,7 +39,7 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
 
   private val futureTakeBlocks: Future[TakeBlocks] = blockManagerRef.ask(ref =>
     BlockManager.GetSavedOrCreate(serverId, context.self))
-  private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(1, MILLISECONDS)).possibleBlocks.get
+  private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(100, MILLISECONDS)).possibleBlocks.get
   private var block: Int = blocks.block1.blockIndex
   private var sequence: Short = blocks.block1.possibleSequenceIndex.getOrElse(Short.MinValue)
 
@@ -50,7 +50,7 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
       blockManagerRef ! BlockManager.Renovate(serverId, blocks, context.self)
     }
     sequence = (sequence + 1).toShort
-    return Some(block << 16 | sequence)
+    Some(block << 16 | sequence)
   }
 
   override def onMessage(msg: Command): Behavior[Command] = {
@@ -61,6 +61,9 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
       case TakeBlocks(possibleBlocks) =>
         // TODO log no block available
         blocks = possibleBlocks.get
+        this
+      case BlocksSaved(ok) =>
+        context.log.info(s"Log saved $ok")
         this
     }
   }

@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AsyncFlatSpec
 import storage.Redis
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.{FiniteDuration, SECONDS, MILLISECONDS}
 import akka.actor.typed.scaladsl.AskPattern.*
 
 import java.time.LocalDateTime
@@ -21,7 +21,7 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
 
   val testKit: ActorTestKit = ActorTestKit()
   private implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val timeout: Timeout = Timeout(FiniteDuration(200, MILLISECONDS))
+  implicit val timeout: Timeout = Timeout(FiniteDuration(50, MILLISECONDS))
   implicit val system: typed.ActorSystem[Nothing] = testKit.system
   private implicit val actorSystem: ActorSystem = ActorSystem()
 
@@ -98,7 +98,8 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
   }
 
   it should "return new block is are not saved" in {
-    Given("a new server id")
+
+    Given("a new server id and timeout")
     val serverId = s"TestServerId_${LocalDateTime.now()}"
 
     When("ask for the server blocks")
@@ -112,13 +113,12 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
       )
 
     Then("the new blocks must new")
-    fistTakeBlocks.zip(futureNewBlocks).map { case (firstBlocks, newBlocks) => {
+    fistTakeBlocks.zip(futureNewBlocks).map { case (firstBlocks, newBlocks) =>
       val firstBlockIndex2 = firstBlocks.possibleBlocks.get.block1.blockIndex
       val newBlockIndex1 = newBlocks.possibleBlocks.get.block1.blockIndex
       val newBlockIndex2 = newBlocks.possibleBlocks.get.block2.blockIndex
       assert(newBlockIndex1 > firstBlockIndex2)
       assert(newBlockIndex2 == newBlockIndex1 + 1)
-    }
     }
 
   }

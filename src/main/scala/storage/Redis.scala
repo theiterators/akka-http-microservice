@@ -18,8 +18,12 @@ class Redis(host: String = "127.0.0.1", port: Int = 6379)(implicit val actorSyst
   override def save[T](key: String, obj: T)(implicit encoder: Encoder[T]): Future[Boolean] =
     redis.set(key, obj.asJson.noSpaces)
 
-  override def get[T](key: String)(implicit decoder: Decoder[T]): Future[Option[T]] =
-    redis.get(key).map(_.flatMap(v => decode[T](v.utf8String).toOption))
+  override def get[T](key: String)(implicit decoder: Decoder[T]): Future[Option[T]] = {
+    logger.info(s"Redis get key: $key")
+    val futureValue = redis.get(key).map(_.flatMap(v => decode[T](v.utf8String).toOption))
+    futureValue.foreach(value => logger.info(s"Redis get answer: $key => $value"))
+    futureValue
+  }
 
   override def incBy(key: String, inc: Long): Future[Long] =
     redis.incrby(key, inc)

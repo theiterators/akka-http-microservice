@@ -7,6 +7,7 @@ import scala.concurrent.Future
 import io.circe._, io.circe.generic.semiauto._
 import concurrent.ExecutionContext.Implicits.global
 import akka.event.{Logging, LoggingAdapter}
+import com.typesafe.scalalogging.LazyLogging
 
 case class BlockStatus(blockIndex: Int, possibleSequenceIndex: Option[Short])
 
@@ -28,7 +29,7 @@ object BlockManager {
 
 
 class BlockManager(context: ActorContext[BlockManager.Command], val storage: Storage)
-  extends AbstractBehavior[BlockManager.Command](context) {
+  extends AbstractBehavior[BlockManager.Command](context) with LazyLogging {
 
   import BlockManager.*
 
@@ -37,11 +38,17 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   def getSavedOrCreate(serverId: String): Future[Option[ServerBlocks]] = {
     val blocksId = s"blocks:$serverId"
     val saved: Future[Option[ServerBlocks]] = storage.get(blocksId)(deriveDecoder[ServerBlocks])
+    saved.foreach(possibleBlocks => logger.info(s"Storage return: $possibleBlocks"))
     saved.flatMap {
-      case possibleBlocks@Some(blocks) if
-        blocks.block1.possibleSequenceIndex.isDefined
-        => Future(possibleBlocks)
-      case _ => renovate(serverId)
+      case Some(blocks) if blocks.block1.possibleSequenceIndex.isDefined =>
+        logger.info(s"getSavedOrCreate: Storage returned valid blocks: $blocks")
+        Future(Some(blocks))
+      case Some(blocks) =>
+        logger.info(s"getSavedOrCreate: Storage returned invalid blocks: $blocks")
+        renovate(serverId)
+      case _ =>
+        logger.info(s"getSavedOrCreate: Storage returned no blocks")
+        renovate(serverId)
     }
   }
 
@@ -55,6 +62,7 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   Future[Option[ServerBlocks]] = {
 
     def reserveNewBlocks(): Future[Option[ServerBlocks]] = {
+      logger.info(s"reserveNewBlocks: beginning")
       val futureIndex = storage.incBy(reservedBlocksKey, 2)
       // TODO Manage 24 bits limit
       futureIndex.map(index => {
@@ -77,12 +85,13 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
       })
     }
 
+    logger.info(s"renovate: Beginning, possibleOldBlocks: $possibleOldBlocks ")
     possibleOldBlocks.match {
       case Some(blocks) =>
-        context.log.info(s"Renovating blocks: $blocks")
+        logger.info(s"Renovating blocks: $blocks")
         renovateBlocks(blocks)
       case None =>
-        context.log.info("Reserving new blocks")
+        logger.info("Reserving new blocks")
         reserveNewBlocks()
     }
 
@@ -91,16 +100,26 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   override def onMessage(msg: Command): Behavior[Command] = {
     msg match {
       case GetSavedOrCreate(serverId, replyTo) =>
-        getSavedOrCreate(serverId).foreach(possibleBlocks => replyTo ! IdGenerator.TakeBlocks(possibleBlocks))
+        logger.info(s"Begin msg GetSavedOrCreate ServerId: $serverId")
+        getSavedOrCreate(serverId).foreach(possibleBlocks =>
+          logger.info(s"GetSavedOrCreate ServerId: $serverId answer: $possibleBlocks")
+            replyTo !IdGenerator.TakeBlocks(possibleBlocks)
+        )
         this
       case Save(serverId, blocks, replyTo) =>
+        logger.info(s"Begin msg Save ServerId: $serverId Blocks: $blocks")
         save(serverId, blocks)
-          .foreach(ok => replyTo ! IdGenerator.BlocksSaved(ok))
+          .foreach(ok =>
+            logger.info(s"Save ServerId: $serverId answer: $ok")
+              replyTo !IdGenerator.BlocksSaved(ok)
+          )
         this
       case Renovate(serverId, blocks, replyTo) =>
+        logger.info(s"Begin msg Renovate ServerId: $serverId Blocks: $blocks")
         renovate(serverId, Some(blocks))
           .foreach(possibleBlocks =>
-            replyTo ! IdGenerator.TakeBlocks(possibleBlocks)
+            logger.info(s"Renovate ServerId: $serverId answer: $blocks")
+              replyTo !IdGenerator.TakeBlocks(possibleBlocks)
           )
         this
     }

@@ -22,6 +22,7 @@ libraryDependencies ++= {
   val rediscalaVersion = "1.9.0"
   val scalaLoggingVersion = "3.9.4"
   val picoHashidsVersion = "4.5.153"
+  val logbackVersion = "1.2.11"
 
 
   Seq(
@@ -29,6 +30,7 @@ libraryDependencies ++= {
     "io.circe" %% "circe-parser" % circeV,
     "io.circe" %% "circe-generic" % circeV,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
+    "ch.qos.logback" % "logback-classic" % logbackVersion,
 
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
     "org.scalatest" %% "scalatest-flatspec" % scalaTestV % Test,
