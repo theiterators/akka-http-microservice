@@ -33,10 +33,12 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
 
   import BlockManager.*
 
+  val blocksKey = "blocks"
   val reservedBlocksKey = "reserved"
 
+
   def getSavedOrCreate(serverId: String): Future[Option[ServerBlocks]] = {
-    val blocksId = s"blocks:$serverId"
+    val blocksId = s"$blocksKey:$serverId"
     val saved: Future[Option[ServerBlocks]] = storage.get(blocksId)(deriveDecoder[ServerBlocks])
     saved.foreach(possibleBlocks => logger.info(s"Storage return: $possibleBlocks"))
     saved.flatMap {
@@ -53,7 +55,7 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
   }
 
   def save(serverId: String, blocks: ServerBlocks): Future[Boolean] = {
-    val blocksId = s"blocks:$serverId"
+    val blocksId = s"$blocksKey:$serverId"
     storage.save(blocksId, blocks)(deriveEncoder[ServerBlocks])
   }
 
@@ -101,26 +103,27 @@ class BlockManager(context: ActorContext[BlockManager.Command], val storage: Sto
     msg match {
       case GetSavedOrCreate(serverId, replyTo) =>
         logger.info(s"Begin msg GetSavedOrCreate ServerId: $serverId")
-        getSavedOrCreate(serverId).foreach(possibleBlocks =>
+        getSavedOrCreate(serverId).foreach(possibleBlocks => {
           logger.info(s"GetSavedOrCreate ServerId: $serverId answer: $possibleBlocks")
-            replyTo !IdGenerator.TakeBlocks(possibleBlocks)
-        )
+          replyTo ! IdGenerator.TakeBlocks(possibleBlocks)
+        })
         this
       case Save(serverId, blocks, replyTo) =>
         logger.info(s"Begin msg Save ServerId: $serverId Blocks: $blocks")
         save(serverId, blocks)
-          .foreach(ok =>
+          .foreach(ok => {
             logger.info(s"Save ServerId: $serverId answer: $ok")
-              replyTo !IdGenerator.BlocksSaved(ok)
+            replyTo ! IdGenerator.BlocksSaved(ok)
+          }
           )
         this
       case Renovate(serverId, blocks, replyTo) =>
         logger.info(s"Begin msg Renovate ServerId: $serverId Blocks: $blocks")
         renovate(serverId, Some(blocks))
-          .foreach(possibleBlocks =>
+          .foreach(possibleBlocks => {
             logger.info(s"Renovate ServerId: $serverId answer: $blocks")
-              replyTo !IdGenerator.TakeBlocks(possibleBlocks)
-          )
+            replyTo ! IdGenerator.TakeBlocks(possibleBlocks)
+          })
         this
     }
   }

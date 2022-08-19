@@ -21,7 +21,7 @@ class BlockManagerTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAf
 
   val testKit: ActorTestKit = ActorTestKit()
   private implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val timeout: Timeout = Timeout(FiniteDuration(50, MILLISECONDS))
+  implicit val timeout: Timeout = Timeout(FiniteDuration(500, MILLISECONDS))
   implicit val system: typed.ActorSystem[Nothing] = testKit.system
   private implicit val actorSystem: ActorSystem = ActorSystem()
 

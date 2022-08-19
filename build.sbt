@@ -50,3 +50,5 @@ libraryDependencies ++= {
 
 Test / scalacOptions += "-Wconf:msg=is not declared `infix`:s,msg=is declared 'open':s"
 Revolver.settings
+
+Test / parallelExecution := false

@@ -7,9 +7,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.AbstractBehavior
 import akka.actor.typed.scaladsl.AskPattern.*
 import akka.util.Timeout
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.{FiniteDuration, MILLISECONDS, SECONDS}
 
 object IdGenerator {
   sealed trait Command
@@ -20,8 +21,9 @@ object IdGenerator {
 
   final case class BlocksSaved(was_ok: Boolean) extends Command
 
-  def create(serverId: String, blockManagerRef: ActorRef[BlockManager.Command])
-            (implicit system: typed.ActorSystem[Nothing]): Behavior[Command] = {
+  def create(serverId: String, blockManagerRef: ActorRef[BlockManager.Command])(
+    implicit system: typed.ActorSystem[Nothing]
+  ): Behavior[Command] = {
     Behaviors.setup(context => new IdGenerator(context, serverId, blockManagerRef))
   }
 }
@@ -31,26 +33,31 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
                   val serverId: String,
                   val blockManagerRef: ActorRef[BlockManager.Command]
                  )(implicit system: typed.ActorSystem[Nothing])
-  extends AbstractBehavior[IdGenerator.Command](context) {
+  extends AbstractBehavior[IdGenerator.Command](context) with LazyLogging {
 
   import IdGenerator.*
 
-  implicit val timeout: Timeout = Timeout(FiniteDuration(1, MILLISECONDS))
+  implicit val timeout: Timeout = Timeout(FiniteDuration(1, SECONDS))
 
   private val futureTakeBlocks: Future[TakeBlocks] = blockManagerRef.ask(ref =>
-    BlockManager.GetSavedOrCreate(serverId, context.self))
-  private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(100, MILLISECONDS)).possibleBlocks.get
-  private var block: Int = blocks.block1.blockIndex
-  private var sequence: Short = blocks.block1.possibleSequenceIndex.getOrElse(Short.MinValue)
+    BlockManager.GetSavedOrCreate(serverId, ref)
+  )
+  private var blocks: ServerBlocks = Await.result(futureTakeBlocks, FiniteDuration(2, SECONDS))
+    .possibleBlocks.get
+  private var block: Long = blocks.block1.blockIndex
+  private var sequence: Short = blocks.block1.possibleSequenceIndex.getOrElse(0)
 
   def generate(): Option[Long] = {
     if (sequence == Short.MaxValue) {
       block = blocks.block2.blockIndex
-      sequence = Short.MinValue
+      sequence = 0
       blockManagerRef ! BlockManager.Renovate(serverId, blocks, context.self)
     }
     sequence = (sequence + 1).toShort
-    Some(block << 16 | sequence)
+    logger.info(s"generate block: ${block.toHexString} sequence: ${sequence.toLong.toHexString}")
+    val generated: Option[Long] = Some(block << 16 | sequence)
+    logger.info(s"generate return ${generated.map(_.toHexString)}")
+    generated
   }
 
   override def onMessage(msg: Command): Behavior[Command] = {
@@ -59,7 +66,9 @@ class IdGenerator(context: ActorContext[IdGenerator.Command],
         replyTo ! generate()
         this
       case TakeBlocks(possibleBlocks) =>
-        // TODO log no block available
+        if (possibleBlocks.isEmpty) {
+          logger.error("IDGenerator didn't get more blocks, dying...")
+        }
         blocks = possibleBlocks.get
         this
       case BlocksSaved(ok) =>

@@ -16,7 +16,7 @@ import akka.actor.typed.{ActorRef, ActorSystem as TypedActorSystem}
 import id_generator.{BlockManager, IdGenerator}
 import storage.Redis
 
-class RedisTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAfterAll {
+class MyShortenerTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfterAll {
 
   behavior of "MyShortener"
 
@@ -24,10 +24,11 @@ class RedisTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAfterAll 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val typedActorSystem: TypedActorSystem[Nothing] = testKit.system
+  implicit val timeout: Timeout = Timeout(FiniteDuration(1, SECONDS))
   val redis: Redis = storage.Redis()
   val blockManager: ActorRef[BlockManager.Command] = testKit.spawn(BlockManager.create(redis))
   val generator: ActorRef[IdGenerator.Command] = testKit.spawn(IdGenerator.create(serverId = "1", blockManager))
-  val encoder = HashidsEncoder()
+  val encoder: HashidsEncoder = HashidsEncoder()
   private val shortener = MyShortener(generator, encoder, redis)
 
   override def afterAll(): Unit = {
@@ -40,49 +41,16 @@ class RedisTest extends AsyncFlatSpec with GivenWhenThen with BeforeAndAfterAll 
     val url = "https://www.moia.io/de-DE"
 
     When("create the short")
-    val futureShort: Future[Option[String]] = shortener.getShort(url)
+    val short = Await.result(shortener.getShort(url),
+      FiniteDuration(1, SECONDS)).get
 
     And("retrieve the original")
-    val futureUrl: Future[Option[String]] = futureShort.flatMap(
-      (possibleShort: Option[String]) =>
-        possibleShort.flatMap((short: String) => shortener.getOriginal(short))
-    )
+    val retrievedUrl = Await.result(shortener.getOriginal(short),
+      FiniteDuration(10, MILLISECONDS)).get
 
     Then("The value is the original")
-    futureValue.map(v => assert(v.contains(value)))
+    assert(retrievedUrl == url)
   }
 
 }
 
-class RedisRestartTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfterAll {
-
-  behavior of "Redis"
-
-  private implicit val ec: ExecutionContext = ExecutionContext.global
-  private implicit val actorSystem: ActorSystem = ActorSystem()
-  private val redis = Redis()
-
-  override def afterAll(): Unit = actorSystem.terminate()
-
-  "Redis server" should "keep the value when restart" in {
-    Given("key and value")
-    val key = "redis_test_restart_key"
-    val value = s"redis_test_restart_value: ${LocalDateTime.now()}"
-
-    When("Save")
-    Await.result(redis.save(key, value)(Encoder[String]), FiniteDuration(1, SECONDS))
-
-    And("Restart the server")
-    val pb = Process("bin/restart_redis.sh")
-    val exitCode = pb.!
-    assert(exitCode == 0)
-
-    And("Get the value")
-    val result = Await.result(redis.get(key)(Decoder[String]), FiniteDuration(2, SECONDS))
-
-    Then("The value is the original")
-    assert(result.contains(value))
-  }
-
-
-}

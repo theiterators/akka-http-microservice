@@ -53,7 +53,7 @@ class RedisRestartTest extends AnyFlatSpec with GivenWhenThen with BeforeAndAfte
     Await.result(redis.save(key, value)(Encoder[String]), FiniteDuration(1, SECONDS))
 
     And("Restart the server")
-    val pb = Process("bin/restart_redis.sh")
+    val pb = Process("bin/redis.sh restart")
     val exitCode = pb.!
     assert(exitCode == 0)
 
