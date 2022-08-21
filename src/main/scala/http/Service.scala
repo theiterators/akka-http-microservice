@@ -1,4 +1,4 @@
-package server
+package http
 
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}

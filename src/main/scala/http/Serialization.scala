@@ -1,4 +1,4 @@
-package server
+package http
 
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import io.circe.{Decoder, Encoder}

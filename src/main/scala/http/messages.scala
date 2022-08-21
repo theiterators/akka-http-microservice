@@ -1,4 +1,4 @@
-package server
+package http
 
 import scala.math.{atan2, cos, pow, sin, sqrt, toRadians}
 
