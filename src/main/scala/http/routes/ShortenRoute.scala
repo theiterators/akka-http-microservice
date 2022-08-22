@@ -12,23 +12,14 @@ import shortener.Shortener
 
 case class ShortenRoute(shortener: Shortener)
   extends Directives
-    with FailFastCirceSupport
-    with HttpConfig {
-
-  def getShort(url: String): Future[String] = for {
-    uriOpt: Option[String] <- validateUri(url)
-    shortenResult <- uriOpt match {
-      case Some(uri) => shortener.getShort(url)
-      case None => Future(UrlShortenResult(code = "", status = OperationFailed))
-    }
-  } yield shortenResult
+    with FailFastCirceSupport {
 
   val routes: Route =
     pathEndOrSingleSlash {
       post {
         formFieldMap { (fields: Map[String, String]) =>
           extractRequestContext { ctx =>
-            onSuccess(getShort(fields("url"))) {
+            onSuccess(shortener.getShort(fields("url"))) {
               result => {
                 result match {
                   case Some(short) =>

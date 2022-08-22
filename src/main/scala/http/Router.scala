@@ -10,6 +10,5 @@ class Router(shortener: Shortener)
     with FailFastCirceSupport {
   val routes: Route =
     ShortenRoute(shortener).routes ~
-      GetShortenedRoute(shortener).routes ~
-      StatsRoute(shortener).routes
+      GetShortenedRoute(shortener).routes
 }
