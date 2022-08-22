@@ -17,19 +17,14 @@ case class ShortenRoute(shortener: Shortener)
   val routes: Route =
     pathEndOrSingleSlash {
       post {
-        formFieldMap { (fields: Map[String, String]) =>
-          extractRequestContext { ctx =>
-            onSuccess(shortener.getShort(fields("url"))) {
-              result => {
-                result match {
-                  case Some(short) =>
-                    val url = s"${ctx.request.uri.authority.toString()}/${short}"
-                    respondWithHeaders(List(RawHeader("Location", url))) {
-                      complete(Created)
-                    }
-                  case _ =>
-                    complete(BadRequest)
-                }
+        extractRequest { request =>
+          onSuccess(shortener.getShort(request.uri.toString())) {
+            result => {
+              result match {
+                case Some(short) =>
+                  complete(short)
+                case _ =>
+                  complete(BadRequest)
               }
             }
           }
