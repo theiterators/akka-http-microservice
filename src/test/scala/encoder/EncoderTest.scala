@@ -1,8 +1,8 @@
 package encoder
 
 
-import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.GivenWhenThen
 
 class EncoderTest extends AsyncFlatSpec with GivenWhenThen {
 

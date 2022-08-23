@@ -7,7 +7,6 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directives, Route}
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import config.HttpConfig
-import http.HttpUtils.validateUri
 import shortener.Shortener
 
 case class PostUrlRoute(shortener: Shortener)
@@ -16,17 +15,17 @@ case class PostUrlRoute(shortener: Shortener)
 
   val routes: Route =
     post {
-      extractRequest { request =>
-        onSuccess(shortener.getShort(request.uri.toString())) {
+      parameter("url") { url =>
+        onSuccess(shortener.getShort(url)) {
           result => {
             result match {
               case Some(short) =>
-                  complete(short)
-                case _ =>
-                  complete(BadRequest)
-              }
+                complete(short)
+              case _ =>
+                complete(BadRequest)
             }
           }
         }
+      }
       }
 }

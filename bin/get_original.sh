@@ -2,4 +2,4 @@
 
 SHORT=$1
 
-curl "http://localhost:9001/$SHORT"
+curl "http://localhost:9001/?short=$SHORT"

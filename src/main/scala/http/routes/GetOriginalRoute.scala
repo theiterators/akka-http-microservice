@@ -9,15 +9,15 @@ import shortener.Shortener
 
 
 case class GetOriginalRoute(shortener: Shortener)
-  extends Directives
-    with FailFastCirceSupport {
+  extends Directives {
 
-  val routes: Route = path(Segment) { short =>
+  val routes: Route =
     get {
-      onSuccess(shortener.getOriginal(short)) {
-        case Some(url) => complete(url)
-        case None => complete(NotFound)
+      parameter("short") { short =>
+        onSuccess(shortener.getOriginal(short)) {
+          case Some(url) => complete(url)
+          case None => complete(NotFound)
+        }
       }
     }
-  }
 }

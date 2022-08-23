@@ -2,4 +2,4 @@
 
 URL=$1
 
-curl -X POST "http://localhost:9001/$URL"
+curl -X POST "http://localhost:9001/?url=$URL"

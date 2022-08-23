@@ -4,14 +4,8 @@ enablePlugins(JavaAppPackaging)
 
 name := "url_shortener"
 organization := "com.github.gilcu2"
-version := "0.1.0"
+version := "0.2.0"
 scalaVersion := "3.1.3"
-
-conflictWarning := ConflictWarning.disable
-
-scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-
-resolvers += "Nexus" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 libraryDependencies ++= {
   val akkaHttpV = "10.2.9"
@@ -43,6 +37,7 @@ libraryDependencies ++= {
     "com.github.etaty" %% "rediscala" % rediscalaVersion,
     "com.dispalt" %% "pico-hashids" % picoHashidsVersion,
 
+
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaV % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test,
   ).map(_.cross(CrossVersion.for3Use2_13))
@@ -52,3 +47,13 @@ Test / scalacOptions += "-Wconf:msg=is not declared `infix`:s,msg=is declared 'o
 Revolver.settings
 
 Test / parallelExecution := false
+
+conflictWarning := ConflictWarning.disable
+
+scalacOptions := Seq(
+  "-unchecked",
+  "-deprecation",
+  "-encoding",
+  "utf8",
+  "-Xfatal-warnings",
+)
