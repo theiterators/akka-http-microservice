@@ -139,11 +139,12 @@ The code implementing our microservice's logic is described in the "microservice
 
 ### plugins.sbt
 
-There are three plugins used in our project. These are:
+There are four plugins used in our project. These are:
 
 *   `sbt-revolver` which is helpful for development. It recompiles and runs our microservice every time the code in files changes (`~reStart` sbt command). Notice that it is initialized inside `build.sbt`.
 *   `sbt-assembly` is a great library that lets us deploy our microservice as a single .jar file.
 *   `sbt-native-packager` is needed by Heroku to stage the app.
+*   `sbt-updates` provides a handy sbt command `dependencyUpdates` that list dependencies that could be updated.
 
 Next: As we know what are the dependencies of our project, let's see what is the minimal configuration needed for the project.
 
