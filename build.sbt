@@ -12,7 +12,7 @@ conflictWarning := ConflictWarning.disable
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
-  val akkaHttpV      = "10.2.9"
+  val akkaHttpV      = "10.2.10"
   val akkaV          = "2.6.19"
   val scalaTestV     = "3.2.13"
   val circeV         = "0.14.3"
