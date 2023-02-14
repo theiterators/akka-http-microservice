@@ -2,7 +2,7 @@ import sbt.librarymanagement.ConflictWarning
 
 enablePlugins(JavaAppPackaging)
 
-name := "akka-http-microservice"
+name := "pekko-http-microservice"
 organization := "com.theiterators"
 version := "1.0"
 scalaVersion := "3.2.2"
@@ -11,25 +11,25 @@ conflictWarning := ConflictWarning.disable
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
+resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
+
 libraryDependencies ++= {
-  val akkaHttpV      = "10.2.10"
-  val akkaV          = "2.6.20"
+  val pekkoHttpV      = "0.0.0+4275-e7598916-SNAPSHOT"
+  val pekkoV          = "0.0.0+26572-982780b0-SNAPSHOT"
   val circeV         = "0.14.4"
   val scalaTestV     = "3.2.15"
-  val akkaHttpCirceV = "1.39.2"
-
+  
   Seq(
+    "org.apache.pekko" %% "pekko-actor" % pekkoV,
+    "org.apache.pekko" %% "pekko-stream" % pekkoV,
+    "org.apache.pekko" %% "pekko-testkit" % pekkoV,
     "io.circe"          %% "circe-core" % circeV,
     "io.circe"          %% "circe-parser" % circeV,
     "io.circe"          %% "circe-generic" % circeV,
     "org.scalatest"     %% "scalatest" % scalaTestV % "test"
   ) ++ Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaV,
-    "com.typesafe.akka" %% "akka-stream" % akkaV,
-    "com.typesafe.akka" %% "akka-http" % akkaHttpV,
-    "de.heikoseeberger" %% "akka-http-circe" % akkaHttpCirceV,
-    "com.typesafe.akka" %% "akka-testkit" % akkaV,
-    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test"
+    "org.apache.pekko" %% "pekko-http" % pekkoHttpV,
+    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpV % "test"
   ).map(_.cross(CrossVersion.for3Use2_13))
 }
 

@@ -1,15 +1,15 @@
-import akka.event.NoLogging
-import akka.http.scaladsl.model.ContentTypes._
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.stream.scaladsl.Flow
+import org.apache.pekko.event.NoLogging
+import org.apache.pekko.http.scaladsl.model.ContentTypes._
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
+import org.apache.pekko.http.scaladsl.model.StatusCodes._
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.stream.scaladsl.Flow
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import io.circe.parser.parse
 
 class ServiceSpec extends AsyncFlatSpec with Matchers with ScalatestRouteTest with Service {
-  override def testConfigSource = "akka.loglevel = WARNING"
+  override def testConfigSource = "pekko.loglevel = WARNING"
   override def config = testConfig
   override val logger = NoLogging
 
