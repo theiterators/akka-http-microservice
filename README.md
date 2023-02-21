@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/theiterators/akka-http-microservice/master/COPYING)
 ![Build Status](https://github.com/theiterators/akka-http-microservice/actions/workflows/ci.yml/badge.svg)
 
-Hot update: it's now running on Scala 3!
+**Due to recent [Akka's license change](https://www.lightbend.com/blog/why-we-are-changing-the-license-for-akka), a fork named [Pekko](https://github.com/apache/incubator-pekko) was created under the Apache Foundation. Starting a new project, you should consider using [Pekko HTTP](https://github.com/apache/incubator-pekko-http). There's a sibling open source template we've created named [pekko-http-microservice](https://github.com/theiterators/pekko-http-microservice).**
 
 This project demonstrates the [Akka HTTP](https://doc.akka.io/docs/akka-http/current/?language=scala) library and Scala to write a simple REST (micro)service. The project shows the following tasks that are typical for most Akka HTTP-based projects:
 
