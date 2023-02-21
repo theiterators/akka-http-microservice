@@ -1,6 +1,5 @@
 # Akka HTTP microservice example
 
-[![Join the chat at https://gitter.im/theiterators/akka-http-microservice](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/theiterators/akka-http-microservice?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/theiterators/akka-http-microservice/master/COPYING)
 ![Build Status](https://github.com/theiterators/akka-http-microservice/actions/workflows/ci.yml/badge.svg)
 
