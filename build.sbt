@@ -5,7 +5,7 @@ enablePlugins(JavaAppPackaging)
 name := "akka-http-microservice"
 organization := "com.theiterators"
 version := "1.0"
-scalaVersion := "3.2.2"
+scalaVersion := "3.3.0"
 
 conflictWarning := ConflictWarning.disable
 
