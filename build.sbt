@@ -15,7 +15,7 @@ libraryDependencies ++= {
   val akkaHttpV      = "10.2.10"
   val akkaV          = "2.6.20"
   val circeV         = "0.14.4"
-  val scalaTestV     = "3.2.18"
+  val scalaTestV     = "3.2.19"
   val akkaHttpCirceV = "1.39.2"
 
   Seq(
